@@ -36,7 +36,6 @@ MinIO Client (mc) provides a modern alternative to UNIX commands like ls, cat, c
   tree       list buckets and objects in a tree format
   tag        manage tags for bucket and object(s)
   undo       undo PUT/DELETE operations
-  update     update mc to latest release
   version    manage bucket versioning
   watch      listen for object notification events
 ```
@@ -232,7 +231,7 @@ In case you are using bash, zsh or fish. Shell completion is embedded by default
 
 ```
 mc <TAB>
-config   diff     find     ls       mirror   policy   session  sql      update   watch
+config   diff     find     ls       mirror   policy   session  sql      watch
 cat      cp       event    head     mb       pipe     rm       share    stat     version
 ```
 

@@ -20,7 +20,6 @@ watch     监听文件和对象的事件。
 anonymous 管理访问策略。
 session   为cp命令管理保存的会话。
 config    管理mc配置文件。
-update    检查软件更新。
 version   输出版本信息。
 ```
 
@@ -76,7 +75,7 @@ mc.exe --help
 ```
 
 ## 通过源码安装
-通过源码安装仅适用于开发人员和高级用户。`mc update`命令不支持基于源码安装的更新通知。请从https://min.io/download/#minio-client下载官方版本。
+通过源码安装仅适用于开发人员和高级用户。请从https://min.io/download/#minio-client下载官方版本。
 
 如果您没有Golang环境，请参照[如何安装Golang](https://golang.org/doc/install)。
 
@@ -160,7 +159,7 @@ source /etc/bash_completion.d/mc
 
 ```
 mc <TAB>
-config   diff     ls       mirror   policy   session  update   watch
+config   diff     ls       mirror   policy   session  watch
 cat      cp       events   mb       pipe     rm       share    version
 ```
 

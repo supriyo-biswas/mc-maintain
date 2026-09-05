@@ -38,7 +38,14 @@ import (
 
 	"github.com/minio/mc/pkg/probe"
 	"github.com/minio/pkg/v3/console"
+	"golang.org/x/term"
 )
+
+// isTerminal reports whether both standard output and standard error are
+// connected to terminals. ANSI output is disabled when either stream is not.
+func isTerminal() bool {
+	return term.IsTerminal(int(os.Stdout.Fd())) && term.IsTerminal(int(os.Stderr.Fd()))
+}
 
 func isErrIgnored(err *probe.Error) (ignored bool) {
 	// For all non critical errors we can continue for the remaining files.

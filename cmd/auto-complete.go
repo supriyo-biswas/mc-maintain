@@ -247,7 +247,6 @@ var completeCmds = map[string]complete.Predictor{
 	"/alias/import": nil,
 	"/alias/export": aliasCompleter,
 
-	"/update": nil,
 	"/od":     nil,
 
 	"/put": complete.PredictOr(s3Completer, fsCompleter),

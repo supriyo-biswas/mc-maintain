@@ -22,13 +22,11 @@ require (
 	github.com/juju/ratelimit v1.0.2
 	github.com/klauspost/compress v1.18.0
 	github.com/mattn/go-ieproxy v0.0.12
-	github.com/mattn/go-isatty v0.0.20
 	github.com/minio/cli v1.24.2
 	github.com/minio/colorjson v1.0.8
 	github.com/minio/filepath v1.0.0
 	github.com/minio/minio-go/v7 v7.0.90
 	github.com/minio/pkg/v3 v3.1.0
-	github.com/minio/selfupdate v0.6.0
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/muesli/termenv v0.16.0
 	github.com/pkg/xattr v0.4.10
@@ -47,7 +45,6 @@ require (
 require (
 	4d63.com/gocheckcompilerdirectives v1.3.0 // indirect
 	4d63.com/gochecknoglobals v0.2.2 // indirect
-	aead.dev/minisign v0.3.0 // indirect
 	codeberg.org/chavacava/garif v0.2.0 // indirect
 	dev.gaijin.team/go/exhaustruct/v4 v4.0.0 // indirect
 	dev.gaijin.team/go/golib v0.6.0 // indirect
@@ -184,6 +181,7 @@ require (
 	github.com/maratori/testpackage v1.1.1 // indirect
 	github.com/matoous/godox v1.1.0 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
+	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-runewidth v0.0.16 // indirect
 	github.com/mgechev/revive v1.12.0 // indirect
 	github.com/minio/crc64nvme v1.0.1 // indirect
