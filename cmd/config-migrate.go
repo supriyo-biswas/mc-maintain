@@ -255,8 +255,8 @@ func migrateConfigV4ToV5() {
 	console.Infof("Successfully migrated %s from version `4` to version `5`.\n", mustGetMcConfigPath())
 }
 
-// Migrate config version `5` to `6`. Add google cloud storage servers
-// to host config. Also remove "." from s3 aws glob rule.
+// Migrate config version `5` to `6`, preserving only explicitly configured
+// aliases and hosts.
 func migrateConfigV5ToV6() {
 	if !isMcConfigExists() {
 		return
@@ -274,22 +274,7 @@ func migrateConfigV5ToV6() {
 
 	cfgV6 := newConfigV6()
 
-	// Add new Google Cloud Storage alias.
-	cfgV6.Aliases["gcs"] = "https://storage.googleapis.com"
-
 	maps.Copy(cfgV6.Aliases, mcCfgV5.Data().(*configV5).Aliases)
-
-	// Add defaults.
-	cfgV6.Hosts["*s3*amazonaws.com"] = hostConfigV6{
-		AccessKeyID:     "YOUR-ACCESS-KEY-ID-HERE",
-		SecretAccessKey: "YOUR-SECRET-ACCESS-KEY-HERE",
-		API:             "S3v4",
-	}
-	cfgV6.Hosts["*storage.googleapis.com"] = hostConfigV6{
-		AccessKeyID:     "YOUR-ACCESS-KEY-ID-HERE",
-		SecretAccessKey: "YOUR-SECRET-ACCESS-KEY-HERE",
-		API:             "S3v2",
-	}
 
 	for host, hostCfgV5 := range mcCfgV5.Data().(*configV5).Hosts {
 		// Find any matching s3 entry and copy keys from it to newer generalized glob entry.
@@ -385,8 +370,6 @@ func migrateConfigV6ToV7() {
 			}
 		}
 	}
-	// Load default settings.
-	cfgV7.loadDefaults()
 	mcNewCfgV7, e := quick.NewConfig(cfgV7, nil)
 	fatalIf(probe.NewError(e), "Unable to initialize quick config for config version `7`.")
 
@@ -427,8 +410,6 @@ func migrateConfigV7ToV8() {
 		hostCfgV8.API = hostCfgV7.API
 		cfgV8.Hosts[host] = hostCfgV8
 	}
-	// Load default settings.
-	cfgV8.loadDefaults()
 	mcNewCfgV8, e := quick.NewConfig(cfgV8, nil)
 	fatalIf(probe.NewError(e), "Unable to initialize quick config for config version `8`.")
 
@@ -496,10 +477,8 @@ func migrateConfigV9ToV10() {
 	fatalIf(probe.NewError(e), "Unable to load mc config V8.")
 
 	cfgV10 := newConfigV10()
-	isEmpty := true
 	// We dropped alias support in v8. We only need to migrate host configs.
 	for host, hostCfgV9 := range mcCfgV9.Data().(*configV9).Hosts {
-		isEmpty = false
 		hostCfgV10 := aliasConfigV10{}
 		hostCfgV10.URL = hostCfgV9.URL
 		hostCfgV10.AccessKey = hostCfgV9.AccessKey
@@ -515,11 +494,6 @@ func migrateConfigV9ToV10() {
 		}
 
 		cfgV10.Aliases[host] = hostCfgV10
-	}
-
-	if isEmpty {
-		// Load default settings.
-		cfgV10.loadDefaults()
 	}
 
 	mcNewCfgV10, e := quick.NewConfig(cfgV10, nil)

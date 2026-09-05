@@ -184,63 +184,6 @@ func newConfigV7() *configV7 {
 	return cfg
 }
 
-func (c *configV7) loadDefaults() {
-	// MinIO server running locally.
-	c.setHost("local", hostConfigV7{
-		URL:       "http://localhost:9000",
-		AccessKey: "",
-		SecretKey: "",
-		API:       "S3v4",
-	})
-
-	// Amazon S3 cloud storage service.
-	c.setHost("s3", hostConfigV7{
-		URL:       "https://s3.amazonaws.com",
-		AccessKey: defaultAccessKey,
-		SecretKey: defaultSecretKey,
-		API:       "S3v4",
-	})
-
-	// Google cloud storage service.
-	c.setHost("gcs", hostConfigV7{
-		URL:       "https://storage.googleapis.com",
-		AccessKey: defaultAccessKey,
-		SecretKey: defaultSecretKey,
-		API:       "S3v2",
-	})
-
-	// MinIO anonymous server for demo.
-	c.setHost("play", hostConfigV7{
-		URL:       "https://play.min.io",
-		AccessKey: "",
-		SecretKey: "",
-		API:       "S3v4",
-	})
-
-	// MinIO demo server with public secret and access keys.
-	c.setHost("player", hostConfigV7{
-		URL:       "https://play.min.io:9002",
-		AccessKey: "Q3AM3UQ867SPQQA43P2F",
-		SecretKey: "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG",
-		API:       "S3v4",
-	})
-
-	// MinIO public download service.
-	c.setHost("dl", hostConfigV7{
-		URL:       "https://dl.min.io:9000",
-		AccessKey: "",
-		SecretKey: "",
-		API:       "S3v4",
-	})
-}
-
-// SetHost sets host config if not empty.
-func (c *configV7) setHost(alias string, cfg hostConfigV7) {
-	if _, ok := c.Hosts[alias]; !ok {
-		c.Hosts[alias] = cfg
-	}
-}
-
 // ///////////////// Config V8 ///////////////////
 // configV8 config version.
 // hostConfig configuration of a host.
@@ -262,48 +205,6 @@ func newConfigV8() *configV8 {
 	cfg.Version = globalMCConfigVersion
 	cfg.Hosts = make(map[string]hostConfigV8)
 	return cfg
-}
-
-// SetHost sets host config if not empty.
-func (c *configV8) setHost(alias string, cfg hostConfigV8) {
-	if _, ok := c.Hosts[alias]; !ok {
-		c.Hosts[alias] = cfg
-	}
-}
-
-// load default values for missing entries.
-func (c *configV8) loadDefaults() {
-	// MinIO server running locally.
-	c.setHost("local", hostConfigV8{
-		URL:       "http://localhost:9000",
-		AccessKey: "",
-		SecretKey: "",
-		API:       "S3v4",
-	})
-
-	// Amazon S3 cloud storage service.
-	c.setHost("s3", hostConfigV8{
-		URL:       "https://s3.amazonaws.com",
-		AccessKey: defaultAccessKey,
-		SecretKey: defaultSecretKey,
-		API:       "S3v4",
-	})
-
-	// Google cloud storage service.
-	c.setHost("gcs", hostConfigV8{
-		URL:       "https://storage.googleapis.com",
-		AccessKey: defaultAccessKey,
-		SecretKey: defaultSecretKey,
-		API:       "S3v2",
-	})
-
-	// MinIO anonymous server for demo.
-	c.setHost("play", hostConfigV8{
-		URL:       "https://play.min.io",
-		AccessKey: "Q3AM3UQ867SPQQA43P2F",
-		SecretKey: "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG",
-		API:       "S3v4",
-	})
 }
 
 /////////////////// Config V9 ///////////////////

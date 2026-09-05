@@ -105,9 +105,7 @@ func mustGetMcConfigPath() string {
 
 // newMcConfig - initializes a new version '10' config.
 func newMcConfig() *configV10 {
-	cfg := newConfigV10()
-	cfg.loadDefaults()
-	return cfg
+	return newConfigV10()
 }
 
 // loadMcConfigCached - returns loadMcConfig with a closure for config cache.
