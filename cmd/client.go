@@ -39,7 +39,6 @@ import (
 	"github.com/minio/minio-go/v7/pkg/credentials"
 	"github.com/minio/minio-go/v7/pkg/encrypt"
 	"github.com/minio/minio-go/v7/pkg/lifecycle"
-	"github.com/minio/minio-go/v7/pkg/replication"
 	"github.com/minio/pkg/v3/env"
 )
 
@@ -183,14 +182,6 @@ type Client interface {
 	// Versioning operations
 	GetVersion(ctx context.Context) (minio.BucketVersioningConfiguration, *probe.Error)
 	SetVersion(ctx context.Context, status string, prefixes []string, excludeFolders bool) *probe.Error
-	// Replication operations
-	GetReplication(ctx context.Context) (replication.Config, *probe.Error)
-	SetReplication(ctx context.Context, cfg *replication.Config, opts replication.Options) *probe.Error
-	RemoveReplication(ctx context.Context) *probe.Error
-	GetReplicationMetrics(ctx context.Context) (replication.MetricsV2, *probe.Error)
-	ResetReplication(ctx context.Context, before time.Duration, arn string) (replication.ResyncTargetsInfo, *probe.Error)
-	ReplicationResyncStatus(ctx context.Context, arn string) (rinfo replication.ResyncTargetsInfo, err *probe.Error)
-
 	// Encryption operations
 	GetEncryption(ctx context.Context) (string, string, *probe.Error)
 	SetEncryption(ctx context.Context, algorithm, kmsKeyID string) *probe.Error

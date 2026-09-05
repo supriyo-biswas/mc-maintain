@@ -34,7 +34,6 @@ import (
 	"time"
 
 	"github.com/mattn/go-ieproxy"
-	"github.com/minio/madmin-go/v3"
 	"github.com/minio/minio-go/v7"
 
 	"github.com/minio/mc/pkg/probe"
@@ -332,12 +331,6 @@ func centerText(s string, w int) string {
 	fmt.Fprintf(&sb, "%s", s)
 	fmt.Fprintf(&sb, "%s", bytes.Repeat([]byte{' '}, int(math.Floor(padding))))
 	return sb.String()
-}
-
-func getClient(aliasURL string) *madmin.AdminClient {
-	client, err := newAdminClient(aliasURL)
-	fatalIf(err, "Unable to initialize admin connection.")
-	return client
 }
 
 func httpClient(reqTimeout time.Duration) *http.Client {

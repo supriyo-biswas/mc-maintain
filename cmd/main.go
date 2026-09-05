@@ -35,7 +35,6 @@ import (
 
 	"github.com/inconshreveable/mousetrap"
 	"github.com/minio/cli"
-	"github.com/minio/madmin-go/v3"
 	"github.com/minio/mc/pkg/probe"
 	"github.com/minio/minio-go/v7/pkg/set"
 	"github.com/minio/pkg/v3/console"
@@ -414,7 +413,6 @@ func checkUpdate(ctx *cli.Context) {
 var appCmds = []cli.Command{
 	aliasCmd,
 	anonymousCmd,
-	batchCmd,
 	cpCmd,
 	catCmd,
 	corsCmd,
@@ -432,15 +430,12 @@ var appCmds = []cli.Command{
 	mvCmd,
 	mirrorCmd,
 	odCmd,
-	pingCmd,
 	policyCmd,
 	pipeCmd,
 	putCmd,
 	rmCmd,
 	retentionCmd,
 	rbCmd,
-	replicateCmd,
-	readyCmd,
 	sqlCmd,
 	statCmd,
 	shareCmd,
@@ -471,10 +466,11 @@ func registerApp(name string) *cli.App {
 	app := cli.NewApp()
 	app.Name = name
 	app.Action = func(ctx *cli.Context) error {
-		mcEnable := env.Get("MC_UPDATE", madmin.EnableOn)
-		minioEnable := env.Get("MINIO_UPDATE", madmin.EnableOn)
+		const enableOn = "on"
+		mcEnable := env.Get("MC_UPDATE", enableOn)
+		minioEnable := env.Get("MINIO_UPDATE", enableOn)
 
-		if strings.HasPrefix(ReleaseTag, "RELEASE.") && (mcEnable == madmin.EnableOn || minioEnable == madmin.EnableOn) {
+		if strings.HasPrefix(ReleaseTag, "RELEASE.") && (mcEnable == enableOn || minioEnable == enableOn) {
 			// Check for new updates from dl.min.io.
 			checkUpdate(ctx)
 		}

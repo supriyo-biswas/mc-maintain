@@ -9,7 +9,6 @@ MinIO Client (mc) provides a modern alternative to UNIX commands like ls, cat, c
 ```
   alias      manage server credentials in configuration file
   anonymous  manage anonymous access to buckets and objects
-  batch      manage batch jobs
   cp         copy objects
   cat        display object contents
   diff       list differences in object name, size, and date between two buckets
@@ -26,14 +25,11 @@ MinIO Client (mc) provides a modern alternative to UNIX commands like ls, cat, c
   mv         move objects
   mirror     synchronize object(s) to a remote site
   od         measure single stream upload and download
-  ping       perform liveness check
   pipe       stream STDIN to an object
   put        upload an object to a bucket
   rm         remove object(s)
   retention  set retention for object(s)
   rb         remove a bucket
-  replicate  configure server side bucket replication
-  ready      checks if the cluster is ready or not
   sql        run sql queries on objects
   stat       show object metadata
   share      generate URL for temporary access to an object

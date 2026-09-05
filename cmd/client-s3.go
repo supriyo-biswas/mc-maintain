@@ -48,7 +48,6 @@ import (
 	"github.com/minio/minio-go/v7/pkg/lifecycle"
 	"github.com/minio/minio-go/v7/pkg/notification"
 	"github.com/minio/minio-go/v7/pkg/policy"
-	"github.com/minio/minio-go/v7/pkg/replication"
 	"github.com/minio/minio-go/v7/pkg/s3utils"
 	"github.com/minio/minio-go/v7/pkg/sse"
 	"github.com/minio/minio-go/v7/pkg/tags"
@@ -2742,104 +2741,6 @@ func (c *S3Client) SetVersion(ctx context.Context, status string, prefixes []str
 	return probe.NewError(err)
 }
 
-// GetReplication - gets replication configuration for a given bucket.
-func (c *S3Client) GetReplication(ctx context.Context) (replication.Config, *probe.Error) {
-	bucket, _ := c.url2BucketAndObject()
-	if bucket == "" {
-		return replication.Config{}, probe.NewError(BucketNameEmpty{})
-	}
-
-	replicationCfg, e := c.api.GetBucketReplication(ctx, bucket)
-	if e != nil {
-		return replication.Config{}, probe.NewError(e)
-	}
-	return replicationCfg, nil
-}
-
-// RemoveReplication - removes replication configuration for a given bucket.
-func (c *S3Client) RemoveReplication(ctx context.Context) *probe.Error {
-	bucket, _ := c.url2BucketAndObject()
-	if bucket == "" {
-		return probe.NewError(BucketNameEmpty{})
-	}
-
-	e := c.api.RemoveBucketReplication(ctx, bucket)
-	return probe.NewError(e)
-}
-
-// SetReplication sets replication configuration for a given bucket.
-func (c *S3Client) SetReplication(ctx context.Context, cfg *replication.Config, opts replication.Options) *probe.Error {
-	bucket, objectPrefix := c.url2BucketAndObject()
-	if bucket == "" {
-		return probe.NewError(BucketNameEmpty{})
-	}
-	opts.Prefix = objectPrefix
-	switch opts.Op {
-	case replication.AddOption:
-		if e := cfg.AddRule(opts); e != nil {
-			return probe.NewError(e)
-		}
-	case replication.SetOption:
-		if e := cfg.EditRule(opts); e != nil {
-			return probe.NewError(e)
-		}
-	case replication.RemoveOption:
-		if e := cfg.RemoveRule(opts); e != nil {
-			return probe.NewError(e)
-		}
-	case replication.ImportOption:
-	default:
-		return probe.NewError(fmt.Errorf("Invalid replication option"))
-	}
-	if e := c.api.SetBucketReplication(ctx, bucket, *cfg); e != nil {
-		return probe.NewError(e)
-	}
-	return nil
-}
-
-// GetReplicationMetrics - Get replication metrics for a given bucket.
-func (c *S3Client) GetReplicationMetrics(ctx context.Context) (replication.MetricsV2, *probe.Error) {
-	bucket, _ := c.url2BucketAndObject()
-	if bucket == "" {
-		return replication.MetricsV2{}, probe.NewError(BucketNameEmpty{})
-	}
-
-	metrics, e := c.api.GetBucketReplicationMetricsV2(ctx, bucket)
-	if e != nil {
-		return replication.MetricsV2{}, probe.NewError(e)
-	}
-	return metrics, nil
-}
-
-// ResetReplication - kicks off replication again on previously replicated objects if existing object
-// replication is enabled in the replication config.Optional to provide a timestamp
-func (c *S3Client) ResetReplication(ctx context.Context, before time.Duration, tgtArn string) (rinfo replication.ResyncTargetsInfo, err *probe.Error) {
-	bucket, _ := c.url2BucketAndObject()
-	if bucket == "" {
-		return rinfo, probe.NewError(BucketNameEmpty{})
-	}
-
-	rinfo, e := c.api.ResetBucketReplicationOnTarget(ctx, bucket, before, tgtArn)
-	if e != nil {
-		return rinfo, probe.NewError(e)
-	}
-	return rinfo, nil
-}
-
-// ReplicationResyncStatus - gets status of replication resync for this target arn
-func (c *S3Client) ReplicationResyncStatus(ctx context.Context, arn string) (rinfo replication.ResyncTargetsInfo, err *probe.Error) {
-	bucket, _ := c.url2BucketAndObject()
-	if bucket == "" {
-		return rinfo, probe.NewError(BucketNameEmpty{})
-	}
-
-	rinfo, e := c.api.GetBucketReplicationResyncStatus(ctx, bucket, arn)
-	if e != nil {
-		return rinfo, probe.NewError(e)
-	}
-	return rinfo, nil
-}
-
 // GetEncryption - gets bucket encryption info.
 func (c *S3Client) GetEncryption(ctx context.Context) (algorithm, keyID string, err *probe.Error) {
 	bucket, _ := c.url2BucketAndObject()
@@ -2928,7 +2829,7 @@ func (c *S3Client) GetBucketInfo(ctx context.Context) (BucketInfo, *probe.Error)
 		}
 	}
 
-	if rcfg, err := c.GetReplication(ctx); err == nil {
+	if rcfg, err := c.api.GetBucketReplication(ctx, bucket); err == nil {
 		if !rcfg.Empty() {
 			b.Replication.Enabled = true
 		}

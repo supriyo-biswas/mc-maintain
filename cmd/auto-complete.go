@@ -206,19 +206,6 @@ var completeCmds = map[string]complete.Predictor{
 	"/encrypt/info":  s3Complete{deepLevel: 2},
 	"/encrypt/clear": s3Complete{deepLevel: 2},
 
-	"/replicate/add":     s3Complete{deepLevel: 2},
-	"/replicate/edit":    s3Complete{deepLevel: 2},
-	"/replicate/update":  s3Complete{deepLevel: 2},
-	"/replicate/list":    s3Complete{deepLevel: 2},
-	"/replicate/remove":  s3Complete{deepLevel: 2},
-	"/replicate/backlog": s3Complete{deepLevel: 2},
-
-	"/replicate/export":        s3Complete{deepLevel: 2},
-	"/replicate/import":        s3Complete{deepLevel: 2},
-	"/replicate/status":        s3Complete{deepLevel: 2},
-	"/replicate/resync/start":  s3Complete{deepLevel: 3},
-	"/replicate/resync/status": s3Complete{deepLevel: 3},
-
 	"/tag/list":   s3Completer,
 	"/tag/remove": s3Completer,
 	"/tag/set":    s3Completer,
@@ -260,16 +247,8 @@ var completeCmds = map[string]complete.Predictor{
 	"/alias/import": nil,
 	"/alias/export": aliasCompleter,
 
-	"/update":         nil,
-	"/ready":          aliasCompleter,
-	"/ping":           aliasCompleter,
-	"/od":             nil,
-	"/batch/generate": aliasCompleter,
-	"/batch/start":    aliasCompleter,
-	"/batch/list":     aliasCompleter,
-	"/batch/status":   aliasCompleter,
-	"/batch/describe": aliasCompleter,
-	"/batch/cancel":   aliasCompleter,
+	"/update": nil,
+	"/od":     nil,
 
 	"/put": complete.PredictOr(s3Completer, fsCompleter),
 	"/get": complete.PredictOr(s3Completer, fsCompleter),

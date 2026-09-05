@@ -29,7 +29,6 @@ import (
 
 	"github.com/dustin/go-humanize"
 	json "github.com/minio/colorjson"
-	"github.com/minio/madmin-go/v3"
 	"github.com/minio/mc/pkg/probe"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/lifecycle"
@@ -263,17 +262,6 @@ func statURL(ctx context.Context, targetURL, versionID string, timeRef time.Time
 				bstat.Date = time.Now()
 			}
 
-			var bu madmin.BucketUsageInfo
-
-			adminClient, _ := newAdminClient(targetURL)
-			if adminClient != nil {
-				// Create a new MinIO Admin Client
-				duinfo, e := adminClient.DataUsageInfo(ctx)
-				if e == nil {
-					bu = duinfo.BucketsUsage[bstat.Key]
-				}
-			}
-
 			if prefixPath != "/" {
 				bstat.Prefix = true
 			}
@@ -281,7 +269,6 @@ func statURL(ctx context.Context, targetURL, versionID string, timeRef time.Time
 			printMsg(bucketInfoMessage{
 				Status:     "success",
 				BucketInfo: bstat,
-				Usage:      bu,
 			})
 
 			return nil
@@ -428,7 +415,6 @@ func (i BucketInfo) Tags() string {
 type bucketInfoMessage struct {
 	Status string `json:"status"`
 	BucketInfo
-	Usage madmin.BucketUsageInfo
 }
 
 func (v bucketInfoMessage) JSON() string {
@@ -442,14 +428,6 @@ func (v bucketInfoMessage) JSON() string {
 
 	fatalIf(probe.NewError(enc.Encode(v)), "Unable to marshal into JSON.")
 	return buf.String()
-}
-
-func countDigits(num uint64) (count uint) {
-	for num > 0 {
-		num /= 10
-		count++
-	}
-	return
 }
 
 func (v bucketInfoMessage) String() string {
@@ -480,36 +458,6 @@ func (v bucketInfoMessage) String() string {
 		fmt.Fprint(&b, console.Colorize("Title", "Properties:\n"))
 		fmt.Fprint(&b, prettyPrintBucketMetadata(v.BucketInfo))
 		fmt.Fprintf(&b, "\n")
-	}
-
-	fmt.Fprint(&b, console.Colorize("Title", "Usage:\n"))
-
-	fmt.Fprintf(&b, "%16s: %s\n", "Total size", console.Colorize("Count", humanize.IBytes(v.Usage.Size)))
-	fmt.Fprintf(&b, "%16s: %s\n", "Objects count", console.Colorize("Count", humanize.Comma(int64(v.Usage.ObjectsCount))))
-	fmt.Fprintf(&b, "%16s: %s\n", "Versions count", console.Colorize("Count", humanize.Comma(int64(v.Usage.VersionsCount))))
-	fmt.Fprintf(&b, "\n")
-
-	if len(v.Usage.ObjectSizesHistogram) > 0 {
-		fmt.Fprint(&b, console.Colorize("Title", "Object sizes histogram:\n"))
-
-		var maxDigits uint
-		for _, val := range v.Usage.ObjectSizesHistogram {
-			if d := countDigits(val); d > maxDigits {
-				maxDigits = d
-			}
-		}
-
-		var sortedTags []string
-		for k := range v.Usage.ObjectSizesHistogram {
-			sortedTags = append(sortedTags, k)
-		}
-		sort.Strings(sortedTags)
-		for _, tagName := range sortedTags {
-			val, ok := v.Usage.ObjectSizesHistogram[tagName]
-			if ok {
-				fmt.Fprintf(&b, "   %*d object(s) %s\n", maxDigits, val, tagName)
-			}
-		}
 	}
 
 	return b.String()

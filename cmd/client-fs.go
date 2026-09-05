@@ -47,7 +47,6 @@ import (
 	"github.com/minio/minio-go/v7/pkg/encrypt"
 	"github.com/minio/minio-go/v7/pkg/lifecycle"
 	"github.com/minio/minio-go/v7/pkg/notification"
-	"github.com/minio/minio-go/v7/pkg/replication"
 	"github.com/minio/pkg/v3/console"
 )
 
@@ -1458,55 +1457,6 @@ func (f *fsClient) GetVersion(_ context.Context) (minio.BucketVersioningConfigur
 func (f *fsClient) SetVersion(_ context.Context, _ string, _ []string, _ bool) *probe.Error {
 	return probe.NewError(APINotImplemented{
 		API:     "SetVersion",
-		APIType: "filesystem",
-	})
-}
-
-// Get replication configuration for a given bucket, not implemented.
-func (f *fsClient) GetReplication(_ context.Context) (replication.Config, *probe.Error) {
-	return replication.Config{}, probe.NewError(APINotImplemented{
-		API:     "GetReplication",
-		APIType: "filesystem",
-	})
-}
-
-// Set replication configuration for a given bucket, not implemented.
-func (f *fsClient) SetReplication(_ context.Context, _ *replication.Config, _ replication.Options) *probe.Error {
-	return probe.NewError(APINotImplemented{
-		API:     "SetReplication",
-		APIType: "filesystem",
-	})
-}
-
-// Remove replication configuration for a given bucket. Not implemented
-func (f *fsClient) RemoveReplication(_ context.Context) *probe.Error {
-	return probe.NewError(APINotImplemented{
-		API:     "RemoveReplication",
-		APIType: "filesystem",
-	})
-}
-
-// GetReplicationMetrics - Get replication metrics for a given bucket, not implemented.
-func (f *fsClient) GetReplicationMetrics(_ context.Context) (replication.MetricsV2, *probe.Error) {
-	return replication.MetricsV2{}, probe.NewError(APINotImplemented{
-		API:     "GetReplicationMetrics",
-		APIType: "filesystem",
-	})
-}
-
-// ResetReplication - kicks off replication again on previously replicated objects if existing object
-// replication is enabled in the replication config, not implemented
-func (f *fsClient) ResetReplication(_ context.Context, _ time.Duration, _ string) (rinfo replication.ResyncTargetsInfo, err *probe.Error) {
-	return rinfo, probe.NewError(APINotImplemented{
-		API:     "ResetReplication",
-		APIType: "filesystem",
-	})
-}
-
-// ReplicationResyncStatus - gets status of replication resync for this target arn
-func (f *fsClient) ReplicationResyncStatus(_ context.Context, _ string) (rinfo replication.ResyncTargetsInfo, err *probe.Error) {
-	return rinfo, probe.NewError(APINotImplemented{
-		API:     "ReplicationResyncStatus",
 		APIType: "filesystem",
 	})
 }
