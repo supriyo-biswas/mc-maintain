@@ -251,7 +251,9 @@ jobs:
 
           tag="$GITHUB_REF_NAME"
           repository="$GITHUB_REPOSITORY"
-          release_id="$(gh api "repos/$repository/releases/tags/$tag" --jq '.id' 2>/dev/null || true)"
+          if ! release_id="$(gh api "repos/$repository/releases/tags/$tag" --jq '.id' 2>/dev/null)"; then
+            release_id=""
+          fi
 
           if [[ -z "$release_id" ]]; then
             release_id="$(gh api \

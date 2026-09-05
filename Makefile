@@ -21,10 +21,8 @@ verifiers: getdeps vet lint
 new-release:
 	@if [ "$$(git rev-parse --abbrev-ref HEAD)" != "master" ]; then echo "Error: new-release must be run on the master branch"; exit 1; fi; \
 	RELEASE_TIME=$$(date -u +"%Y-%m-%dT%H-%M-%SZ"); \
-	echo "Creating release commit and tag for RELEASE.$${RELEASE_TIME}"; \
-	git commit --allow-empty -m "chore: release $${RELEASE_TIME}"; \
+	echo "Creating release tag for RELEASE.$${RELEASE_TIME}"; \
 	git tag "RELEASE.$${RELEASE_TIME}"; \
-	git push origin HEAD; \
 	git push origin "RELEASE.$${RELEASE_TIME}"
 
 vet:
