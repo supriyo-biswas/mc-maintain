@@ -82,7 +82,7 @@ EXAMPLES:
 func mainIDPLdapPolicyAttach(ctx *cli.Context) error {
 	// We need exactly one alias, and at least one policy.
 	if len(ctx.Args()) < 2 {
-		showCommandHelpAndExit(ctx, 1)
+		cli.ShowCommandHelpAndExit(ctx, ctx.Command.Name, 1)
 	}
 	user := ctx.String("user")
 	group := ctx.String("group")
@@ -208,7 +208,7 @@ EXAMPLES:
 func mainIDPLdapPolicyDetach(ctx *cli.Context) error {
 	// We need exactly one alias, and at least one policy.
 	if len(ctx.Args()) < 2 {
-		showCommandHelpAndExit(ctx, 1)
+		cli.ShowCommandHelpAndExit(ctx, ctx.Command.Name, 1)
 	}
 
 	user := ctx.String("user")
@@ -301,7 +301,7 @@ EXAMPLES:
 
 func mainIDPLdapPolicyEntities(ctx *cli.Context) error {
 	if len(ctx.Args()) != 1 {
-		showCommandHelpAndExit(ctx, 1)
+		cli.ShowCommandHelpAndExit(ctx, ctx.Command.Name, 1)
 	}
 
 	usersToQuery := ctx.StringSlice("user")

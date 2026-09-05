@@ -78,7 +78,7 @@ func mainAdminReplicateResyncStart(ctx *cli.Context) error {
 	// Check argument count
 	argsNr := len(ctx.Args())
 	if argsNr != 2 {
-		showCommandHelpAndExit(ctx, 1) // last argument is exit code
+		cli.ShowCommandHelpAndExit(ctx, ctx.Command.Name, 1) // last argument is exit code
 	}
 
 	console.SetColor("ResyncMessage", color.New(color.FgGreen))

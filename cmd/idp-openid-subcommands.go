@@ -70,7 +70,7 @@ func mainIDPOpenIDAdd(ctx *cli.Context) error {
 
 func mainIDPOpenIDAddOrUpdate(ctx *cli.Context, update bool) error {
 	if len(ctx.Args()) < 2 {
-		showCommandHelpAndExit(ctx, 1)
+		cli.ShowCommandHelpAndExit(ctx, ctx.Command.Name, 1)
 	}
 
 	args := ctx.Args()
@@ -161,7 +161,7 @@ EXAMPLES:
 
 func mainIDPOpenIDRemove(ctx *cli.Context) error {
 	if len(ctx.Args()) < 1 || len(ctx.Args()) > 2 {
-		showCommandHelpAndExit(ctx, 1)
+		cli.ShowCommandHelpAndExit(ctx, ctx.Command.Name, 1)
 	}
 
 	args := ctx.Args()
@@ -222,7 +222,7 @@ EXAMPLES:
 
 func mainIDPOpenIDList(ctx *cli.Context) error {
 	if len(ctx.Args()) != 1 {
-		showCommandHelpAndExit(ctx, 1)
+		cli.ShowCommandHelpAndExit(ctx, ctx.Command.Name, 1)
 	}
 
 	return idpListCommon(ctx, true)
@@ -368,7 +368,7 @@ EXAMPLES:
 
 func mainIDPOpenIDInfo(ctx *cli.Context) error {
 	if len(ctx.Args()) < 1 || len(ctx.Args()) > 2 {
-		showCommandHelpAndExit(ctx, 1)
+		cli.ShowCommandHelpAndExit(ctx, ctx.Command.Name, 1)
 	}
 
 	args := ctx.Args()
@@ -501,7 +501,7 @@ func mainIDPOpenIDEnable(ctx *cli.Context) error {
 
 func idpEnableDisable(ctx *cli.Context, isOpenID, enable bool) error {
 	if len(ctx.Args()) < 1 || len(ctx.Args()) > 2 {
-		showCommandHelpAndExit(ctx, 1)
+		cli.ShowCommandHelpAndExit(ctx, ctx.Command.Name, 1)
 	}
 
 	args := ctx.Args()

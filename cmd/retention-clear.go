@@ -92,7 +92,7 @@ func parseClearRetentionArgs(cliCtx *cli.Context) (target, versionID string, tim
 	args := cliCtx.Args()
 
 	if len(args) != 1 {
-		showCommandHelpAndExit(cliCtx, 1)
+		cli.ShowCommandHelpAndExit(cliCtx, cliCtx.Command.Name, 1)
 	}
 
 	target = args[0]

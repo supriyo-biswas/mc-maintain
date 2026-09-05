@@ -79,7 +79,7 @@ EXAMPLES:
 func checkAdminUserAddSyntax(ctx *cli.Context) {
 	argsNr := len(ctx.Args())
 	if argsNr > 3 || argsNr < 1 {
-		showCommandHelpAndExit(ctx, 1)
+		cli.ShowCommandHelpAndExit(ctx, ctx.Command.Name, 1)
 	}
 }
 

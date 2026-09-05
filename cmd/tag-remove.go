@@ -115,7 +115,7 @@ func (t tagRemoveMessage) JSON() string {
 
 func parseRemoveTagSyntax(ctx *cli.Context) (targetURL, versionID string, timeRef time.Time, withVersions, recursive bool) {
 	if len(ctx.Args()) != 1 {
-		showCommandHelpAndExit(ctx, globalErrorExitStatus)
+		cli.ShowCommandHelpAndExit(ctx, ctx.Command.Name, globalErrorExitStatus)
 	}
 
 	targetURL = ctx.Args().Get(0)

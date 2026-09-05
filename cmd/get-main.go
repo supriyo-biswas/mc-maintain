@@ -66,7 +66,7 @@ EXAMPLES:
 func mainGet(cliCtx *cli.Context) (e error) {
 	args := cliCtx.Args()
 	if len(args) != 2 {
-		showCommandHelpAndExit(cliCtx, 1) // last argument is exit code.
+		cli.ShowCommandHelpAndExit(cliCtx, cliCtx.Command.Name, 1) // last argument is exit code.
 	}
 
 	ctx, cancelGet := context.WithCancel(globalContext)

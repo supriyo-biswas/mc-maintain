@@ -207,7 +207,7 @@ func (i ilmAddMessage) JSON() string {
 // Validate user given arguments
 func checkILMAddSyntax(ctx *cli.Context) {
 	if len(ctx.Args()) != 1 {
-		showCommandHelpAndExit(ctx, globalErrorExitStatus)
+		cli.ShowCommandHelpAndExit(ctx, ctx.Command.Name, globalErrorExitStatus)
 	}
 }
 

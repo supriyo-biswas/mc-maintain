@@ -48,7 +48,7 @@ EXAMPLES:
 func checkAliasExportSyntax(ctx *cli.Context) {
 	args := ctx.Args()
 	if ctx.NArg() == 0 {
-		showCommandHelpAndExit(ctx, 1)
+		cli.ShowCommandHelpAndExit(ctx, ctx.Command.Name, 1)
 	}
 	if ctx.NArg() > 1 {
 		fatalIf(errInvalidArgument().Trace(ctx.Args().Tail()...),

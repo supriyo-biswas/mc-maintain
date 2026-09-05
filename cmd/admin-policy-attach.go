@@ -74,7 +74,7 @@ func mainAdminPolicyAttach(ctx *cli.Context) error {
 
 func userAttachOrDetachPolicy(ctx *cli.Context, attach bool) error {
 	if len(ctx.Args()) < 2 {
-		showCommandHelpAndExit(ctx, 1) // last argument is exit code
+		cli.ShowCommandHelpAndExit(ctx, ctx.Command.Name, 1) // last argument is exit code
 	}
 	user := ctx.String("user")
 	group := ctx.String("group")

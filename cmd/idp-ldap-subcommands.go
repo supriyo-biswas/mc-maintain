@@ -57,7 +57,7 @@ EXAMPLES:
 
 func mainIDPLDAPAdd(ctx *cli.Context) error {
 	if len(ctx.Args()) < 2 {
-		showCommandHelpAndExit(ctx, 1)
+		cli.ShowCommandHelpAndExit(ctx, ctx.Command.Name, 1)
 	}
 
 	args := ctx.Args()
@@ -120,7 +120,7 @@ EXAMPLES:
 
 func mainIDPLDAPUpdate(ctx *cli.Context) error {
 	if len(ctx.Args()) < 2 {
-		showCommandHelpAndExit(ctx, 1)
+		cli.ShowCommandHelpAndExit(ctx, ctx.Command.Name, 1)
 	}
 
 	args := ctx.Args()
@@ -182,7 +182,7 @@ EXAMPLES:
 
 func mainIDPLDAPRemove(ctx *cli.Context) error {
 	if len(ctx.Args()) != 1 {
-		showCommandHelpAndExit(ctx, 1)
+		cli.ShowCommandHelpAndExit(ctx, ctx.Command.Name, 1)
 	}
 
 	cfgName := madmin.Default
@@ -214,7 +214,7 @@ EXAMPLES:
 
 func mainIDPLDAPList(ctx *cli.Context) error {
 	if len(ctx.Args()) != 1 {
-		showCommandHelpAndExit(ctx, 1)
+		cli.ShowCommandHelpAndExit(ctx, ctx.Command.Name, 1)
 	}
 
 	return idpListCommon(ctx, false)
@@ -244,7 +244,7 @@ EXAMPLES:
 
 func mainIDPLDAPInfo(ctx *cli.Context) error {
 	if len(ctx.Args()) != 1 {
-		showCommandHelpAndExit(ctx, 1)
+		cli.ShowCommandHelpAndExit(ctx, ctx.Command.Name, 1)
 	}
 
 	cfgName := madmin.Default
@@ -275,7 +275,7 @@ EXAMPLES:
 
 func mainIDPLDAPEnable(ctx *cli.Context) error {
 	if len(ctx.Args()) != 1 {
-		showCommandHelpAndExit(ctx, 1)
+		cli.ShowCommandHelpAndExit(ctx, ctx.Command.Name, 1)
 	}
 
 	isOpenID, enable := false, true
@@ -306,7 +306,7 @@ EXAMPLES:
 
 func mainIDPLDAPDisable(ctx *cli.Context) error {
 	if len(ctx.Args()) != 1 {
-		showCommandHelpAndExit(ctx, 1)
+		cli.ShowCommandHelpAndExit(ctx, ctx.Command.Name, 1)
 	}
 
 	isOpenID, enable := false, false

@@ -103,7 +103,7 @@ func mainIDPLdapAccesskeyCreate(ctx *cli.Context) error {
 
 func commonAccesskeyCreate(ctx *cli.Context, ldap bool) error {
 	if len(ctx.Args()) == 0 || len(ctx.Args()) > 2 {
-		showCommandHelpAndExit(ctx, 1) // last argument is exit code
+		cli.ShowCommandHelpAndExit(ctx, ctx.Command.Name, 1) // last argument is exit code
 	}
 
 	args := ctx.Args()

@@ -209,7 +209,7 @@ func du(ctx context.Context, urlStr string, timeRef time.Time, withVersions bool
 // main for du command.
 func mainDu(cliCtx *cli.Context) error {
 	if !cliCtx.Args().Present() {
-		showCommandHelpAndExit(cliCtx, 1)
+		cli.ShowCommandHelpAndExit(cliCtx, cliCtx.Command.Name, 1)
 	}
 
 	// Set colors.

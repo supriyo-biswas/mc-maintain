@@ -72,7 +72,7 @@ EXAMPLES:
 
 func mainIDPLdapAccesskeyCreateWithLogin(ctx *cli.Context) error {
 	if !ctx.Args().Present() {
-		showCommandHelpAndExit(ctx, 1) // last argument is exit code
+		cli.ShowCommandHelpAndExit(ctx, ctx.Command.Name, 1) // last argument is exit code
 	}
 
 	isTerminal := term.IsTerminal(int(os.Stdin.Fd()))

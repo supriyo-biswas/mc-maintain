@@ -122,7 +122,7 @@ func mainIDPLdapAccesskeyList(ctx *cli.Context) error {
 
 func commonAccesskeyList(ctx *cli.Context) (aliasedURL string, tentativeAll bool, users []string, opts madmin.ListAccessKeysOpts) {
 	if len(ctx.Args()) == 0 {
-		showCommandHelpAndExit(ctx, 1) // last argument is exit code
+		cli.ShowCommandHelpAndExit(ctx, ctx.Command.Name, 1) // last argument is exit code
 	}
 
 	usersOnly := ctx.Bool("users-only")

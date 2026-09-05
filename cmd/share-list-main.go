@@ -59,7 +59,7 @@ EXAMPLES:
 func checkShareListSyntax(ctx *cli.Context) {
 	args := ctx.Args()
 	if !args.Present() || (args.First() != "upload" && args.First() != "download") {
-		showCommandHelpAndExit(ctx, 1) // last argument is exit code.
+		cli.ShowCommandHelpAndExit(ctx, ctx.Command.Name, 1) // last argument is exit code.
 	}
 }
 

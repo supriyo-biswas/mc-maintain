@@ -144,7 +144,7 @@ func mainOD(cliCtx *cli.Context) error {
 	defer cancelCopy()
 
 	if !cliCtx.Args().Present() {
-		showCommandHelpAndExit(cliCtx, 1) // last argument is exit code
+		cli.ShowCommandHelpAndExit(cliCtx, cliCtx.Command.Name, 1) // last argument is exit code
 	}
 
 	var kvsArgs argKVS

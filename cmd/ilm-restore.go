@@ -93,7 +93,7 @@ EXAMPLES:
 // checkILMRestoreSyntax - validate arguments passed by user
 func checkILMRestoreSyntax(ctx *cli.Context) {
 	if len(ctx.Args()) != 1 {
-		showCommandHelpAndExit(ctx, globalErrorExitStatus)
+		cli.ShowCommandHelpAndExit(ctx, ctx.Command.Name, globalErrorExitStatus)
 	}
 
 	if ctx.Int("days") <= 0 {

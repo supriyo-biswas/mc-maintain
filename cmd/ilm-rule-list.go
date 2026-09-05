@@ -112,7 +112,7 @@ func validateILMListFlagSet(ctx *cli.Context) bool {
 // checkILMListSyntax - validate arguments passed by a user
 func checkILMListSyntax(ctx *cli.Context) {
 	if len(ctx.Args()) != 1 {
-		showCommandHelpAndExit(ctx, globalErrorExitStatus)
+		cli.ShowCommandHelpAndExit(ctx, ctx.Command.Name, globalErrorExitStatus)
 	}
 
 	if !validateILMListFlagSet(ctx) {

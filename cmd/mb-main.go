@@ -114,7 +114,7 @@ func (s makeBucketMessage) JSON() string {
 // Validate command line arguments.
 func checkMakeBucketSyntax(cliCtx *cli.Context) {
 	if !cliCtx.Args().Present() {
-		showCommandHelpAndExit(cliCtx, 1) // last argument is exit code
+		cli.ShowCommandHelpAndExit(cliCtx, cliCtx.Command.Name, 1) // last argument is exit code
 	}
 }
 

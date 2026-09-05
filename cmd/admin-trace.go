@@ -248,12 +248,12 @@ var colors = []color.Attribute{color.FgCyan, color.FgWhite, color.FgYellow, colo
 
 func checkAdminTraceSyntax(ctx *cli.Context) {
 	if len(ctx.Args()) != 1 && len(ctx.String("in")) == 0 {
-		showCommandHelpAndExit(ctx, 1) // last argument is exit code
+		cli.ShowCommandHelpAndExit(ctx, ctx.Command.Name, 1) // last argument is exit code
 	}
 	filterFlag := ctx.Bool("filter-request") || ctx.Bool("filter-response")
 	if filterFlag && ctx.String("filter-size") == "" {
 		// filter must use with filter-size flags
-		showCommandHelpAndExit(ctx, 1)
+		cli.ShowCommandHelpAndExit(ctx, ctx.Command.Name, 1)
 	}
 
 	if ctx.Bool("all") && len(ctx.StringSlice("call")) > 0 {

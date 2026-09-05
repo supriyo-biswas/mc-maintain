@@ -65,7 +65,7 @@ EXAMPLES:
 // checkReplicateListSyntax - validate all the passed arguments
 func checkReplicateListSyntax(ctx *cli.Context) {
 	if len(ctx.Args()) != 1 {
-		showCommandHelpAndExit(ctx, 1) // last argument is exit code
+		cli.ShowCommandHelpAndExit(ctx, ctx.Command.Name, 1) // last argument is exit code
 	}
 }
 

@@ -104,7 +104,7 @@ EXAMPLES:
 // parseAndCheckStatSyntax - parse and validate all the passed arguments
 func parseAndCheckStatSyntax(ctx context.Context, cliCtx *cli.Context) ([]string, bool, string, time.Time, bool) {
 	if !cliCtx.Args().Present() {
-		showCommandHelpAndExit(cliCtx, 1) // last argument is exit code
+		cli.ShowCommandHelpAndExit(cliCtx, cliCtx.Command.Name, 1) // last argument is exit code
 	}
 
 	args := cliCtx.Args()

@@ -80,7 +80,7 @@ func (c batchCancelMessage) JSON() string {
 // checkBatchCancelSyntax - validate all the passed arguments
 func checkBatchCancelSyntax(ctx *cli.Context) {
 	if len(ctx.Args()) != 2 {
-		showCommandHelpAndExit(ctx, 1) // last argument is exit code
+		cli.ShowCommandHelpAndExit(ctx, ctx.Command.Name, 1) // last argument is exit code
 	}
 }
 

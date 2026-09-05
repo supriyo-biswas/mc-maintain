@@ -44,12 +44,6 @@ var globalFlags = []cli.Flag{
 		EnvVar: envPrefix + "QUIET",
 	},
 	cli.BoolFlag{
-		Name:   "disable-pager, dp",
-		Usage:  "disable mc internal pager and print to raw stdout",
-		EnvVar: envPrefix + globalDisablePagerEnv,
-		Hidden: false,
-	},
-	cli.BoolFlag{
 		Name:   "no-color",
 		Usage:  "disable color theme",
 		EnvVar: envPrefix + "NO_COLOR",

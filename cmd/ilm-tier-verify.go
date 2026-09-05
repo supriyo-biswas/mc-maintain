@@ -52,7 +52,7 @@ func mainAdminTierVerify(ctx *cli.Context) error {
 	args := ctx.Args()
 	nArgs := len(args)
 	if nArgs < 2 {
-		showCommandHelpAndExit(ctx, 1)
+		cli.ShowCommandHelpAndExit(ctx, ctx.Command.Name, 1)
 	}
 	if nArgs != 2 {
 		fatalIf(errInvalidArgument().Trace(args.Tail()...),

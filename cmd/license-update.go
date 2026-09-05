@@ -77,7 +77,7 @@ func mainLicenseUpdate(ctx *cli.Context) error {
 	args := ctx.Args()
 	argsLen := len(args)
 	if argsLen > 2 || argsLen < 1 {
-		showCommandHelpAndExit(ctx, 1) // last argument is exit code
+		cli.ShowCommandHelpAndExit(ctx, ctx.Command.Name, 1) // last argument is exit code
 	}
 
 	console.SetColor(licUpdateMsgTag, color.New(color.FgGreen, color.Bold))

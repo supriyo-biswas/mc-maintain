@@ -104,7 +104,7 @@ func checkAliasSetSyntax(ctx *cli.Context, accessKey, secretKey string, deprecat
 	argsNr := len(args)
 
 	if argsNr == 0 {
-		showCommandHelpAndExit(ctx, 1) // last argument is exit code
+		cli.ShowCommandHelpAndExit(ctx, ctx.Command.Name, 1) // last argument is exit code
 	}
 
 	if argsNr > 4 || argsNr < 2 {

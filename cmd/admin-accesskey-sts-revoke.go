@@ -102,7 +102,7 @@ func (m stsRevokeMessage) JSON() string {
 // checkSTSRevokeSyntax - validate all the passed arguments
 func checkSTSRevokeSyntax(ctx *cli.Context) {
 	if len(ctx.Args()) > 2 || len(ctx.Args()) == 0 {
-		showCommandHelpAndExit(ctx, 1)
+		cli.ShowCommandHelpAndExit(ctx, ctx.Command.Name, 1)
 	}
 
 	if !ctx.Bool("self") && ctx.Args().Get(1) == "" {

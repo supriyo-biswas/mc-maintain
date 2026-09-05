@@ -95,12 +95,12 @@ func init() {
 }
 
 // Main starts mc application
-func Main(args []string) error {
+func Main(args []string) {
 	if len(args) > 1 {
 		switch args[1] {
 		case "mc", filepath.Base(args[0]):
 			mainComplete()
-			return nil
+			return
 		}
 	}
 
@@ -134,13 +134,10 @@ func Main(args []string) error {
 	// Monitor OS exit signals and cancel the global context in such case
 	go trapSignals(os.Interrupt, syscall.SIGTERM, syscall.SIGKILL)
 
-	globalHelpPager = newTermPager()
-	// Wait until the user quits the pager
-	defer globalHelpPager.WaitForExit()
-
-	parsePagerDisableFlag(args)
-	// Run the app
-	return registerApp(appName).Run(args)
+	// Run the app - exit on error.
+	if err := registerApp(appName).Run(args); err != nil {
+		os.Exit(1)
+	}
 }
 
 func flagValue(f cli.Flag) reflect.Value {
@@ -493,11 +490,12 @@ func registerApp(name string) *cli.App {
 			return nil
 		}
 
-		if ctx.Args().First() == "" {
-			showAppHelpAndExit(ctx)
+		if ctx.Args().First() != "" {
+			commandNotFound(ctx, app.Commands)
+		} else {
+			cli.ShowAppHelp(ctx)
 		}
 
-		commandNotFound(ctx, app.Commands)
 		return exitStatus(globalErrorExitStatus)
 	}
 
@@ -523,30 +521,10 @@ func registerApp(name string) *cli.App {
 		return nil
 	}
 
-	if isTerminal() && !globalPagerDisabled {
-		app.HelpWriter = globalHelpPager
-	} else {
-		app.HelpWriter = os.Stdout
-	}
-
 	return app
 }
 
 // mustGetProfilePath must get location that the profile will be written to.
 func mustGetProfileDir() string {
 	return filepath.Join(mustGetMcConfigDir(), globalProfileDir)
-}
-
-func showCommandHelpAndExit(cliCtx *cli.Context, code int) {
-	cli.ShowCommandHelp(cliCtx, cliCtx.Command.Name)
-	// Wait until the user quits the pager
-	globalHelpPager.WaitForExit()
-	os.Exit(code)
-}
-
-func showAppHelpAndExit(cliCtx *cli.Context) {
-	cli.ShowAppHelp(cliCtx)
-	// Wait until the user quits the pager
-	globalHelpPager.WaitForExit()
-	os.Exit(globalErrorExitStatus)
 }
