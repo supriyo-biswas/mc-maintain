@@ -18,7 +18,6 @@
 package cmd
 
 import (
-	"io"
 	"runtime"
 	"strings"
 	"time"
@@ -74,16 +73,6 @@ func newPB(total int64) *pb.ProgressBar {
 	return bar.Start()
 }
 
-func newProgressReader(r io.Reader, caption string, total int64) *pb.Reader {
-	bar := newPB(total)
-
-	if caption != "" {
-		bar.Prefix(caption)
-	}
-
-	return bar.NewProxyReader(r)
-}
-
 // newProgressBar - instantiate a progress bar.
 func newProgressBar(total int64) *progressBar {
 	bar := newPB(total)
@@ -121,35 +110,6 @@ func (p *progressBar) Read(buf []byte) (n int, err error) {
 
 func (p *progressBar) SetTotal(total int64) {
 	p.Total = total
-}
-
-// cursorAnimate - returns a animated rune through read channel for every read.
-func cursorAnimate() <-chan string {
-	cursorCh := make(chan string)
-	var cursors []string
-
-	switch runtime.GOOS {
-	case "linux":
-		// cursors = "➩➪➫➬➭➮➯➱"
-		// cursors = "▁▃▄▅▆▇█▇▆▅▄▃"
-		cursors = []string{"◐", "◓", "◑", "◒"}
-		// cursors = "←↖↑↗→↘↓↙"
-		// cursors = "◴◷◶◵"
-		// cursors = "◰◳◲◱"
-		// cursors = "⣾⣽⣻⢿⡿⣟⣯⣷"
-	case "darwin":
-		cursors = []string{"◐", "◓", "◑", "◒"}
-	default:
-		cursors = []string{"|", "/", "-", "\\"}
-	}
-	go func() {
-		for {
-			for _, cursor := range cursors {
-				cursorCh <- cursor
-			}
-		}
-	}()
-	return cursorCh
 }
 
 // fixateBarCaption - fancify bar caption based on the terminal width.

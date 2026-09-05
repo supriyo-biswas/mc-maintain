@@ -87,13 +87,8 @@ var (
 	globalCustomHeader http.Header
 )
 
-var (
-	// Terminal height/width, zero if not found
-	globalTermWidth, globalTermHeight int
-
-	// CA root certificates, a nil value means system certs pool will be used
-	globalRootCAs *x509.CertPool
-)
+// CA root certificates, a nil value means system certs pool will be used
+var globalRootCAs *x509.CertPool
 
 // Set global states. NOTE: It is deliberately kept monolithic to ensure we dont miss out any flags.
 func setGlobalsFromContext(ctx *cli.Context) error {

@@ -173,13 +173,7 @@ func errorIf(err *probe.Error, msg string, data ...any) {
 	console.Errorln(fmt.Sprintf("%s %s", msg, err))
 }
 
-// deprecatedError function for deprecated commands
-func deprecatedError(newCommandName string) {
-	err := probe.NewError(fmt.Errorf("Please use '%s' instead", newCommandName))
-	fatal(err, "Deprecated command")
-}
-
-// deprecatedError function for deprecated flags
+// deprecatedFlagError reports a deprecated flag.
 func deprecatedFlagError(oldFlag, newFlag string) {
 	err := probe.NewError(fmt.Errorf("'%s' has been deprecated, please use %s instead", oldFlag, newFlag))
 	fatal(err, "a deprecated Flag")

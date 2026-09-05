@@ -2583,6 +2583,7 @@ func validateErrorMSGValues(
 		}
 	}
 }
+
 func parseShareMessageFromJSONOutput(out string) (share *shareMessage, err error) {
 	share = new(shareMessage)
 	err = json.Unmarshal([]byte(out), share)

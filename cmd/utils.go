@@ -24,8 +24,6 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
-	"net"
-	"net/http"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -33,7 +31,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mattn/go-ieproxy"
 	"github.com/minio/minio-go/v7"
 
 	"github.com/minio/mc/pkg/probe"
@@ -157,20 +154,6 @@ func NewS3Config(alias, urlStr string, aliasCfg *aliasConfigV10) *Config {
 		s3Config.Lookup = getLookupType(aliasCfg.Path)
 	}
 	return s3Config
-}
-
-// lineTrunc - truncates a string to the given maximum length by
-// adding ellipsis in the middle
-func lineTrunc(content string, maxLen int) string {
-	runes := []rune(content)
-	rlen := len(runes)
-	if rlen <= maxLen {
-		return content
-	}
-	halfLen := maxLen / 2
-	fstPart := string(runes[0:halfLen])
-	sndPart := string(runes[rlen-halfLen:])
-	return fstPart + "…" + sndPart
 }
 
 // isOlder returns true if the passed object is older than olderRef
@@ -338,45 +321,4 @@ func centerText(s string, w int) string {
 	fmt.Fprintf(&sb, "%s", s)
 	fmt.Fprintf(&sb, "%s", bytes.Repeat([]byte{' '}, int(math.Floor(padding))))
 	return sb.String()
-}
-
-func httpClient(reqTimeout time.Duration) *http.Client {
-	return &http.Client{
-		Timeout: reqTimeout,
-		Transport: &http.Transport{
-			DialContext: (&net.Dialer{
-				Timeout: 10 * time.Second,
-			}).DialContext,
-			Proxy: ieproxy.GetProxyFunc(),
-			TLSClientConfig: &tls.Config{
-				RootCAs:            globalRootCAs,
-				InsecureSkipVerify: globalInsecure,
-				// Can't use SSLv3 because of POODLE and BEAST
-				// Can't use TLSv1.0 because of POODLE and BEAST using CBC cipher
-				// Can't use TLSv1.1 because of RC4 cipher usage
-				MinVersion: tls.VersionTLS12,
-			},
-			IdleConnTimeout:       90 * time.Second,
-			TLSHandshakeTimeout:   10 * time.Second,
-			ExpectContinueTimeout: 10 * time.Second,
-		},
-	}
-}
-
-// conservativeFileName returns a conservative file name
-func conservativeFileName(s string) string {
-	return strings.Trim(strings.Map(func(r rune) rune {
-		switch {
-		case r >= 'a' && r <= 'z':
-			return r
-		case r >= 'A' && r <= 'Z':
-			return r
-		case r >= '0' && r <= '9':
-			return r
-		case strings.ContainsAny(string(r), "+-_%()[]!@"):
-			return r
-		default:
-			return '_'
-		}
-	}, s), "_")
 }

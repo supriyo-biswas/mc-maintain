@@ -116,10 +116,8 @@ func Main(args []string) {
 
 	// Fetch terminal size, if not available, automatically
 	// set globalQuiet to true on non-window.
-	if w, h, e := term.GetSize(int(os.Stdout.Fd())); e != nil {
+	if _, _, e := term.GetSize(int(os.Stdout.Fd())); e != nil {
 		globalQuiet = runtime.GOOS != "windows"
-	} else {
-		globalTermWidth, globalTermHeight = w, h
 	}
 
 	// Set the mc app name.
