@@ -49,11 +49,15 @@ On Linux/MacOS/FreeBSD, you can install the `mc` binary to `/usr/local/bin` usin
 curl -fSL https://github.com/supriyo-biswas/mc/releases/latest/download/mc-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed -e 's/^x86_64$/amd64/' -e 's/^aarch64$/arm64/' -e 's/^armv.*$/arm/') -o mc && chmod +x mc && sudo mv mc /usr/local/bin/
 ```
 
+On Windows, you can install the `mc.exe` binary to `C:\Windows\System32` (already on `PATH`) using the following command in an elevated (Administrator) PowerShell:
+
+```powershell
+Invoke-WebRequest -Uri https://github.com/supriyo-biswas/mc/releases/latest/download/mc-windows-amd64.exe -OutFile mc.exe; Move-Item -Force mc.exe C:\Windows\System32\mc.exe
+```
+
 ## Usage
 
 To begin, start by adding an object storage service to `mc`'s configuration by using the `mc` alias set command.
-
-Storage operations require a configured alias. Local filesystem paths are accepted only when transferring data to or from object storage; local-only operations are rejected to avoid treating a missing alias as a local path.
 
 You'll need an access key and secret to get started. For example, if you want to access Amazon S3, create an [access key in IAM](https://medium.com/@anuradha.kadurugasyaya/create-aws-iam-user-for-s3-bucket-892bae4751fc) and add it using the following command:
 
@@ -67,7 +71,7 @@ Similarly, for Google Cloud Storage, you can create an [access key in Google Clo
 mc alias set gcs https://storage.googleapis.com <access-key> <secret-key> --path dns --api S3v2
 ```
 
-If you have neither, you test against the [MinIO Play server](https://play.min.io) by adding it as an alias:
+If you have neither, you may test against the [MinIO Play server](https://play.min.io) by adding it as an alias:
 
 ```bash
 mc alias set play https://play.min.io Q3AM3UQ867SPQQA43P2F zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG
@@ -111,7 +115,7 @@ If you've faced compatibility issues with S3 compatible services please [open an
 There are a few differences in the CLI commands as well:
 
 * MinIO-only commands such as `admin`, `support` and `license` are not included as we target broader S3 compatibility instead of being an administration tool for MinIO.
-* Local-only operations such as listing local files or deleting local files are not supported, as the author has found it only leads to mistakes such as inadvertently deleting local files. Local↔S3 and S3↔S3 transfers and operations are supported.
+* Local-only operations such as listing local files or deleting local files are not supported, as the author has found it only leads to mistakes such as inadvertently copying or deleting local files. Local↔remote and remote↔remote transfers and operations are supported.
 
 ## License
 
