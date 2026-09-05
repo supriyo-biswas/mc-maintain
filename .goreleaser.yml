@@ -72,10 +72,10 @@ archives:
   -
     formats:
       - binary
-    name_template: "{{ .Binary }}-release/{{ .Os }}-{{ .Arch }}/{{ .Binary }}.{{ .Version }}"
+    name_template: "{{ .Binary }}-release/{{ .Os }}-{{ .Arch }}/{{ .Binary }}"
 
 checksum:
-  algorithm: sha256
+  disable: true
 
 changelog:
   sort: asc

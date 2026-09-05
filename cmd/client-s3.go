@@ -250,7 +250,7 @@ func newFactory() func(config *Config) (Client, *probe.Error) {
 			// Set app info.
 			api.SetAppInfo(config.AppName, config.AppVersion)
 
-			// Cache the new MinIO Client with hash of config as key.
+			// Cache the new client with hash of config as key.
 			clientCache[confSum] = api
 		}
 

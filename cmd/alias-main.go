@@ -24,7 +24,7 @@ import (
 	"github.com/minio/pkg/v3/console"
 )
 
-//   Configure an alias in MinIO Client
+//   Configure an alias
 //
 //   ----
 //   NOTE: that the alias command only writes values to the config file.

@@ -1,10 +1,8 @@
-# MinIO Client Quickstart Guide
-[![Slack](https://slack.min.io/slack?type=svg)](https://slack.min.io) [![Go Report Card](https://goreportcard.com/badge/minio/mc)](https://goreportcard.com/report/minio/mc) [![Docker Pulls](https://img.shields.io/docker/pulls/minio/mc.svg?maxAge=604800)](https://hub.docker.com/r/minio/mc/) [![license](https://img.shields.io/badge/license-AGPL%20V3-blue)](https://github.com/minio/mc/blob/master/LICENSE)
+# mc
 
-# Documentation
-- [MC documentation](https://docs.min.io/community/minio-object-store/reference/minio-mc.html)
+`mc` provides a command-line client to interact with Amazon S3 and S3-compatible object storage services (e.g. Cloudflare R2, Backblaze B2, MinIO, etc.) It offers a Unix-like command based interface with commands such as ls, cat, cp, mirror, diff, find etc.
 
-MinIO Client (mc) provides a modern alternative to UNIX commands like ls, cat, cp, mirror, diff, find etc. It supports filesystems and Amazon S3 compatible cloud storage service (AWS Signature v2 and v4).
+It provides the following commands:
 
 ```
   alias      manage server credentials in configuration file
@@ -39,81 +37,16 @@ MinIO Client (mc) provides a modern alternative to UNIX commands like ls, cat, c
   watch      listen for object notification events
 ```
 
-## Docker Container
-### Stable
-```
-docker pull minio/mc
-docker run minio/mc ls play
-```
+It is based on the last open-source version of the [Minio client](https://github.com/minio/mc), but is actively maintained and tested with S3 compatible open-source services (e.g. [RustFS](https://github.com/rustfs/rustfs), [Garage](https://garagehq.deuxfleurs.fr) and [SeaweedFS](https://github.com/seaweedfs/seaweedfs)) unlike the original project, which has been unmaintained since 2025.
 
-### Edge
-```
-docker pull minio/mc:edge
-docker run minio/mc:edge ls play
-```
+## Installation
 
-**Note:** Above examples run `mc` against MinIO [_play_ environment](#test-your-setup) by default. To run `mc` against other S3 compatible servers, start the container this way:
+To install the minio client, head to the [releases](https://github.com/supriyo-biswas/mc-maintain/releases) and download a binary for the platform of your choice.
+
+On Linux/MacOS/FreeBSD, you can install the `mc` binary to `/usr/local/bin` using the following command:
 
 ```
-docker run -it --entrypoint=/bin/sh minio/mc
-```
-
-then use the [`mc alias` command](#add-a-cloud-storage-service).
-
-### GitLab CI
-When using the Docker container in GitLab CI, you must [set the entrypoint to an empty string](https://docs.gitlab.com/ee/ci/docker/using_docker_images.html#override-the-entrypoint-of-an-image).
-
-```
-deploy:
-  image:
-    name: minio/mc
-    entrypoint: ['']
-  stage: deploy
-  before_script:
-    - mc alias set minio $MINIO_HOST $MINIO_ACCESS_KEY $MINIO_SECRET_KEY
-  script:
-    - mc cp <source> <destination>
-```
-
-## macOS
-### Homebrew
-Install mc packages using [Homebrew](http://brew.sh/)
-
-```
-brew install minio/stable/mc
-mc --help
-```
-
-## GNU/Linux
-### Binary Download
-| Platform | Architecture | URL |
-| ---------- | -------- |------|
-|GNU/Linux|64-bit Intel|https://dl.min.io/client/mc/release/linux-amd64/mc |
-|GNU/Linux|64-bit PPC|https://dl.min.io/client/mc/release/linux-ppc64le/mc |
-|GNU/Linux|64-bit ARM|https://dl.min.io/client/mc/release/linux-arm64/mc |
-|Linux/s390x|S390X|https://dl.min.io/client/mc/release/linux-s390x/mc |
-
-```
-wget https://dl.min.io/client/mc/release/linux-amd64/mc
-chmod +x mc
-./mc --help
-```
-
-## Microsoft Windows
-### Binary Download
-| Platform | Architecture | URL |
-| ---------- | -------- |------|
-|Microsoft Windows|64-bit Intel|https://dl.min.io/client/mc/release/windows-amd64/mc.exe |
-
-```
-mc.exe --help
-```
-
-## Install from Source
-Source installation is only intended for developers and advanced users. If you do not have a working Golang environment, please follow [How to install Golang](https://golang.org/doc/install). Minimum version required is [go1.22](https://golang.org/dl/#stable)
-
-```sh
-go install github.com/minio/mc@latest
+curl -fSL https://github.com/supriyo-biswas/mc-maintain/releases/latest/download/mc-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed -e 's/^x86_64$/amd64/' -e 's/^aarch64$/arm64/' -e 's/^armv.*$/arm/') -o mc && chmod +x mc && sudo mv mc /usr/local/bin/
 ```
 
 ## Add a Cloud Storage Service
@@ -213,18 +146,6 @@ myobject.txt:    14 B / 14 B  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓�
 
 ## Everyday Use
 
-### Shell aliases
-You may add shell aliases to override your common Unix tools.
-
-```
-alias ls='mc ls'
-alias cp='mc cp'
-alias cat='mc cat'
-alias mkdir='mc mb'
-alias pipe='mc pipe'
-alias find='mc find'
-```
-
 ### Shell autocompletion
 In case you are using bash, zsh or fish. Shell completion is embedded by default in `mc`, to install auto-completion use `mc --autocompletion`. Restart the shell, mc will auto-complete commands as shown below.
 
@@ -234,8 +155,6 @@ config   diff     find     ls       mirror   policy   session  sql      watch
 cat      cp       event    head     mb       pipe     rm       share    stat     version
 ```
 
-## Contribute to MinIO Project
-Please follow MinIO [Contributor's Guide](https://github.com/minio/mc/blob/master/CONTRIBUTING.md)
-
 ## License
-Use of `mc` is governed by the GNU AGPLv3 license that can be found in the [LICENSE](https://github.com/minio/mc/blob/master/LICENSE) file.
+
+Use of `mc` is governed by the GNU AGPLv3 license that can be found in the [LICENSE](https://github.com/supriyo-biswas/mc-maintain/blob/master/LICENSE) file, which is the same license used by the MinIO client.

@@ -44,7 +44,6 @@ func isCertsDirExists() bool {
 	return true
 }
 
-// createCertsDir - create MinIO Client certs folder
 func createCertsDir() *probe.Error {
 	p, err := getCertsDir()
 	if err != nil {
@@ -84,7 +83,7 @@ func isCAsDirExists() bool {
 	return true
 }
 
-// createCAsDir - create MinIO Client CAs folder
+// createCAsDir - create CAs folder
 func createCAsDir() *probe.Error {
 	p, err := getCAsDir()
 	if err != nil {

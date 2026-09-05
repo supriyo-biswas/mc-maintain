@@ -70,7 +70,7 @@ TIP:
   Use '{{.Name}} --autocompletion' to enable shell autocompletion
 
 COPYRIGHT:
-  Copyright (c) 2015-` + CopyrightYear + ` MinIO, Inc.
+  Copyright (c) 2015-` + CopyrightYear + ` MinIO, Inc. and other contributors
 
 LICENSE:
   GNU AGPLv3 <https://www.gnu.org/licenses/agpl-3.0.html>
@@ -426,7 +426,7 @@ var appCmds = []cli.Command{
 func printMCVersion(c *cli.Context) {
 	fmt.Fprintf(c.App.Writer, "%s version %s (commit-id=%s)\n", c.App.Name, c.App.Version, CommitID)
 	fmt.Fprintf(c.App.Writer, "Runtime: %s %s/%s\n", runtime.Version(), runtime.GOOS, runtime.GOARCH)
-	fmt.Fprintf(c.App.Writer, "Copyright (c) 2015-%s MinIO, Inc.\n", CopyrightYear)
+	fmt.Fprintf(c.App.Writer, "Copyright (c) 2015-%s MinIO, Inc. and other contributors\n", CopyrightYear)
 	fmt.Fprintf(c.App.Writer, "License GNU AGPLv3 <https://www.gnu.org/licenses/agpl-3.0.html>\n")
 }
 
@@ -459,9 +459,8 @@ func registerApp(name string) *cli.App {
 
 	app.Before = registerBefore
 	app.HideHelpCommand = true
-	app.Usage = "MinIO Client for object storage and filesystems."
+	app.Usage = "object storage client"
 	app.Commands = appCmds
-	app.Author = "MinIO, Inc."
 	app.Version = ReleaseTag
 	app.Flags = append(mcFlags, globalFlags...)
 	app.CustomAppHelpTemplate = mcHelpTemplate
