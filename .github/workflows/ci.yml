@@ -1,0 +1,230 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - master
+  push:
+    branches:
+      - master
+    tags:
+      - 'RELEASE.*'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/RELEASE.') }}
+
+jobs:
+  unit:
+    name: Unit tests on Go ${{ matrix.go-version }} and ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    env:
+      GO111MODULE: on
+    strategy:
+      fail-fast: false
+      matrix:
+        go-version: [1.25.x]
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v5
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: ${{ matrix.go-version }}
+          cache: true
+
+      - name: Build and run unit tests
+        run: |
+          go build --ldflags="-s -w" .
+          go test -v -race --timeout 30m ./...
+
+  integration:
+    name: Integration tests
+    runs-on: ubuntu-latest
+    env:
+      ACCESS_KEY: minioadmin
+      SECRET_KEY: minioadmin
+      ENABLE_HTTPS: 1
+      MINIO_CI_CD: 1
+      SERVER_ENDPOINT: localhost:9000
+      MC_TEST_ENABLE_HTTPS: true
+      MC_TEST_SKIP_INSECURE: true
+      MC_TEST_SKIP_BUILD: true
+      GO111MODULE: on
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Start MinIO
+        run: |
+          wget https://dl.min.io/server/minio/release/linux-amd64/minio
+          chmod +x minio
+          mkdir -p ~/.minio/certs/
+          cp testdata/localhost.crt ~/.minio/certs/public.crt
+          cp testdata/localhost.key ~/.minio/certs/private.key
+          sudo cp testdata/localhost.crt /usr/local/share/ca-certificates/
+          sudo update-ca-certificates
+          ./minio server /tmp/test-xl/{1...4}/ &
+          sleep 10
+
+      - name: Run race and verification tests
+        run: |
+          make test-race
+          make verify
+          ./functional-tests.sh
+
+  compatibility:
+    name: Linux 386 compatibility tests
+    runs-on: ubuntu-latest
+    env:
+      CGO_ENABLED: 0
+      GO111MODULE: on
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v5
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Test 386
+        run: GOOS=linux GOARCH=386 go test -short ./...
+
+  vulncheck:
+    name: Vulnerability analysis
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v5
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Install govulncheck
+        run: go install golang.org/x/vuln/cmd/govulncheck@latest
+
+      - name: Run govulncheck
+        run: govulncheck ./...
+
+  build:
+    name: Build release artifacts
+    if: >-
+      github.event_name == 'push' &&
+      (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/RELEASE.'))
+    needs: [unit, integration, compatibility]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out tagged source
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Build snapshot artifacts on master
+        if: github.ref == 'refs/heads/master'
+        uses: goreleaser/goreleaser-action@v7
+        with:
+          distribution: goreleaser
+          version: '~> v2'
+          args: release --clean --snapshot --skip=publish
+
+      - name: Build tagged artifacts
+        if: startsWith(github.ref, 'refs/tags/RELEASE.')
+        uses: goreleaser/goreleaser-action@v7
+        with:
+          distribution: goreleaser
+          version: '~> v2'
+          args: release --clean --skip=publish --skip=validate
+
+      - name: Upload build outputs
+        uses: actions/upload-artifact@v7
+        with:
+          name: mc-dist-${{ github.run_id }}-${{ github.run_attempt }}
+          path: dist/
+          if-no-files-found: error
+          retention-days: 7
+
+  publish:
+    name: Publish GitHub Release assets
+    if: startsWith(github.ref, 'refs/tags/RELEASE.')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download build outputs
+        uses: actions/download-artifact@v4
+        with:
+          name: mc-dist-${{ github.run_id }}-${{ github.run_attempt }}
+          path: dist
+
+      - name: Create or update GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          tag="$GITHUB_REF_NAME"
+          repository="$GITHUB_REPOSITORY"
+          release_id="$(gh api "repos/$repository/releases/tags/$tag" --jq '.id' 2>/dev/null || true)"
+
+          if [[ -z "$release_id" ]]; then
+            release_id="$(gh api \
+              --method POST \
+              "repos/$repository/releases" \
+              -f "tag_name=$tag" \
+              -f "name=Version $tag" \
+              -F generate_release_notes=true \
+              --jq '.id')"
+          fi
+
+          while IFS=$'\t' read -r path name; do
+            [[ -n "$path" && -n "$name" ]]
+
+            existing_id="$(gh api \
+              "repos/$repository/releases/$release_id/assets?per_page=100" \
+              --jq '.[] | [.id, .name] | @tsv' \
+              | awk -F '\t' -v asset_name="$name" '$2 == asset_name { print $1; exit }')"
+
+            if [[ -n "$existing_id" ]]; then
+              gh api --method DELETE "repos/$repository/releases/assets/$existing_id"
+            fi
+
+            encoded_name="$(jq -rn --arg asset_name "$name" '$asset_name | @uri')"
+            gh api \
+              --method POST \
+              -H 'Content-Type: application/octet-stream' \
+              "repos/$repository/releases/$release_id/assets?name=$encoded_name" \
+              --input "$path" >/dev/null
+          done < <(
+            jq -r '
+              .[]
+              | select((.type == "Binary" and .extra.Format == "binary") or .type == "Checksum")
+              | [.path, .name]
+              | @tsv
+            ' dist/artifacts.json
+          )
