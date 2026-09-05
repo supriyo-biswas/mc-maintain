@@ -20,7 +20,6 @@ MinIO Client (mc) provides a modern alternative to UNIX commands like ls, cat, c
   get        get s3 object to local
   head       display first 'n' lines of an object
   ilm        manage bucket lifecycle
-  idp        manage MinIO IDentity Provider server configuration
   legalhold  manage legal hold for object(s)
   ls         list buckets and objects
   mb         make a bucket
@@ -30,7 +29,6 @@ MinIO Client (mc) provides a modern alternative to UNIX commands like ls, cat, c
   ping       perform liveness check
   pipe       stream STDIN to an object
   put        upload an object to a bucket
-  quota      manage bucket quota
   rm         remove object(s)
   retention  set retention for object(s)
   rb         remove a bucket
