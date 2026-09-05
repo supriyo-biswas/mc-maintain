@@ -1,6 +1,6 @@
 # mc
 
-`mc` provides a command-line client to interact with Amazon S3 and S3-compatible object storage services (e.g. Cloudflare R2, Backblaze B2, MinIO, etc.) It offers a Unix-like command based interface with commands such as ls, cat, cp, mirror, diff, find etc.
+`mc` provides a command-line client to interact with Amazon S3 and S3-compatible object storage services (e.g. Cloudflare R2, Backblaze B2, MinIO, etc.) It offers a Unix-like command based interface to interact with S3, implementing commands like ls, cat, cp, find etc.
 
 It provides the following commands:
 
@@ -155,6 +155,14 @@ config   diff     find     ls       mirror   policy   session  sql      watch
 cat      cp       event    head     mb       pipe     rm       share    stat     version
 ```
 
+## Compatibility
+
+`mc` aims to be compatible with Amazon S3 and S3-compatible services that offer a reasonable degree of S3 compatibility.
+
+If you've faced compatibility issues with S3 compatible services please [open an issue](https://github.com/supriyo-biswas/mc-maintain/issues).
+
+MinIO-only commands such as `admin`, `support` and `license` are not included as we are targeting broader S3 compatibility instead of being an administration tool for MinIO.
+
 ## License
 
-Use of `mc` is governed by the GNU AGPLv3 license that can be found in the [LICENSE](https://github.com/supriyo-biswas/mc-maintain/blob/master/LICENSE) file, which is the same license used by the MinIO client.
+Use of `mc` is governed by the GNU AGPLv3 license that can be found in the [LICENSE](https://github.com/supriyo-biswas/mc-maintain/blob/master/LICENSE) file, which is the same license as the original [MinIO client](https://github.com/minio/mc).
