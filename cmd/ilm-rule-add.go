@@ -119,7 +119,7 @@ var ilmAddFlags = []cli.Flag{
 	},
 	cli.StringFlag{
 		Name:   "storage-class",
-		Usage:  "storage class for current version to transition into. MinIO supports tiers configured via `mc-admin-tier-add`.",
+		Usage:  "storage class for current version to transition into. MinIO supports tiers configured via `mc ilm tier add`.",
 		Hidden: true,
 	},
 	cli.StringFlag{

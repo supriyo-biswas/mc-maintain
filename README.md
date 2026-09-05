@@ -8,7 +8,6 @@ MinIO Client (mc) provides a modern alternative to UNIX commands like ls, cat, c
 
 ```
   alias      manage server credentials in configuration file
-  admin      manage MinIO servers
   anonymous  manage anonymous access to buckets and objects
   batch      manage batch jobs
   cp         copy objects
@@ -22,7 +21,6 @@ MinIO Client (mc) provides a modern alternative to UNIX commands like ls, cat, c
   head       display first 'n' lines of an object
   ilm        manage bucket lifecycle
   idp        manage MinIO IDentity Provider server configuration
-  license    license related commands
   legalhold  manage legal hold for object(s)
   ls         list buckets and objects
   mb         make a bucket
@@ -40,7 +38,6 @@ MinIO Client (mc) provides a modern alternative to UNIX commands like ls, cat, c
   ready      checks if the cluster is ready or not
   sql        run sql queries on objects
   stat       show object metadata
-  support    support related commands
   share      generate URL for temporary access to an object
   tree       list buckets and objects in a tree format
   tag        manage tags for bucket and object(s)
@@ -241,7 +238,7 @@ In case you are using bash, zsh or fish. Shell completion is embedded by default
 
 ```
 mc <TAB>
-admin    config   diff     find     ls       mirror   policy   session  sql      update   watch
+config   diff     find     ls       mirror   policy   session  sql      update   watch
 cat      cp       event    head     mb       pipe     rm       share    stat     version
 ```
 

@@ -29,30 +29,6 @@ import (
 	"github.com/minio/mc/pkg/probe"
 )
 
-var adminAccesskeyInfoCmd = cli.Command{
-	Name:         "info",
-	Usage:        "info about given access key pairs",
-	Action:       mainAdminAccesskeyInfo,
-	Before:       setGlobalsFromContext,
-	Flags:        globalFlags,
-	OnUsageError: onUsageError,
-	CustomHelpTemplate: `NAME:
-  {{.HelpName}} - {{.Usage}}
-
-USAGE:
-  {{.HelpName}} [FLAGS] TARGET ACCESSKEY [ACCESSKEY...]
-
-FLAGS:
-  {{range .VisibleFlags}}{{.}}
-  {{end}}
-EXAMPLES:
-  1. Get info for the access key "testkey"
-	 {{.Prompt}} {{.HelpName}} local/ testkey
-  2. Get info for the access keys "testkey" and "testkey2"
-	 {{.Prompt}} {{.HelpName}} local/ testkey testkey2
-	`,
-}
-
 type accesskeyMessage struct {
 	op            string
 	Status        string          `json:"status"`
@@ -136,10 +112,6 @@ func (m accesskeyMessage) JSON() string {
 
 type providerInfo interface {
 	String() string
-}
-
-func mainAdminAccesskeyInfo(ctx *cli.Context) error {
-	return commonAccesskeyInfo(ctx)
 }
 
 func commonAccesskeyInfo(ctx *cli.Context) error {

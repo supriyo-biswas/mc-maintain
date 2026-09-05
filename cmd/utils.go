@@ -37,7 +37,6 @@ import (
 	"github.com/minio/madmin-go/v3"
 	"github.com/minio/minio-go/v7"
 
-	jwtgo "github.com/golang-jwt/jwt/v4"
 	"github.com/minio/mc/pkg/probe"
 	"github.com/minio/pkg/v3/console"
 )
@@ -362,20 +361,6 @@ func httpClient(reqTimeout time.Duration) *http.Client {
 			ExpectContinueTimeout: 10 * time.Second,
 		},
 	}
-}
-
-func getPrometheusToken(hostConfig *aliasConfigV10) (string, error) {
-	jwt := jwtgo.NewWithClaims(jwtgo.SigningMethodHS512, jwtgo.RegisteredClaims{
-		ExpiresAt: jwtgo.NewNumericDate(UTCNow().Add(defaultPrometheusJWTExpiry)),
-		Subject:   hostConfig.AccessKey,
-		Issuer:    "prometheus",
-	})
-
-	token, e := jwt.SignedString([]byte(hostConfig.SecretKey))
-	if e != nil {
-		return "", e
-	}
-	return token, nil
 }
 
 // conservativeFileName returns a conservative file name

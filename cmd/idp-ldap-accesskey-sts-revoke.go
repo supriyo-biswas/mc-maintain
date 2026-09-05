@@ -29,7 +29,7 @@ var idpLdapAccesskeySTSRevokeCmd = cli.Command{
 	Action:       mainIdpLdapAccesskeySTSRevoke,
 	OnUsageError: onUsageError,
 	Before:       setGlobalsFromContext,
-	Flags:        append(adminAccesskeySTSRevokeFlags, globalFlags...),
+	Flags:        append(accesskeySTSRevokeFlags, globalFlags...),
 	CustomHelpTemplate: `NAME:
   {{.HelpName}} - {{.Usage}}
 

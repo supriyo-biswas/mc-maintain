@@ -515,7 +515,7 @@ func (v bucketInfoMessage) String() string {
 	return b.String()
 }
 
-// Pretty print bucket configuration - used by stat and admin bucket info as well
+// Pretty print bucket configuration used by stat.
 func prettyPrintBucketMetadata(info BucketInfo) string {
 	var b strings.Builder
 	placeHolder := ""

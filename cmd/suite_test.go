@@ -67,9 +67,6 @@ func Test_FullSuite(t *testing.T) {
 	// Alias tests
 	AddALIASWithError(t)
 
-	// Basic admin user tests
-	AdminUserFunctionalTest(t)
-
 	// Share upload/download
 	ShareURLUploadTest(t)
 	ShareURLDownloadTest(t)
@@ -107,7 +104,7 @@ func Test_FullSuite(t *testing.T) {
 	// MC_TEST_KMS_KEY=[KEY_NAME]
 	// needs to be set in order to run these tests
 	if sseKMSKeyName != "" {
-		VerifyKMSKey(t)
+		sseInvalidKmsKeyName = uuid.NewString()
 		PutObjectWithSSEKMS(t)
 		PutObjectWithSSEKMSPartialPrefixMatch(t)
 		PutObjectWithSSEKMSMultipart(t)
@@ -181,11 +178,6 @@ func testsThatDependOnOneAnother(t *testing.T) {
 	GetObjectsAndCompareMD5(t)
 }
 
-type TestUser struct {
-	Username string
-	Password string
-}
-
 var (
 	oneMBSlice               [1048576]byte // 1x Mebibyte
 	defaultAlias             = "mintest"
@@ -211,7 +203,6 @@ var (
 	mainTestBucket string
 	sseTestBucket  string
 	bucketList     = make([]string, 0)
-	userList       = make(map[string]TestUser, 0)
 
 	// ENCRYPTION
 	sseHexKey                = "8fe4d820587c427d5cc207d75cb76f3c6874808174b04050fa209206bfd08ebb"
@@ -347,8 +338,6 @@ func initializeTestSuite(t *testing.T) {
 		preCmdParameters = append(preCmdParameters, insecureFlag)
 	}
 
-	CreateTestUsers()
-
 	_, err = RunMC(
 		"alias",
 		"set",
@@ -376,21 +365,6 @@ func preflightCheck(t *testing.T) {
 		fatalMsgOnly("No curl found, output from 'which curl': "+string(out), t)
 	}
 	curlPath = string(out)
-}
-
-func CreateTestUsers() {
-	userList["user1"] = TestUser{
-		Username: "user1",
-		Password: "user1-password",
-	}
-	userList["user2"] = TestUser{
-		Username: "user2",
-		Password: "user2-password",
-	}
-	userList["user3"] = TestUser{
-		Username: "user3",
-		Password: "user3-password",
-	}
 }
 
 func CreateFileBundle() {
@@ -489,74 +463,6 @@ func AddALIASWithError(t *testing.T) {
 		"random-invalid-secret-that-will-not-work",
 	)
 	fatalIfNoErrorWMsg(err, out, t)
-}
-
-func AdminUserFunctionalTest(t *testing.T) {
-	user1Bucket := CreateBucket(t)
-
-	user1File := createFile(newTestFile{
-		addToGlobalFileMap: false,
-		tag:                "user1",
-		sizeInMBS:          1,
-	})
-
-	out, err := RunMC(
-		"admin",
-		"user",
-		"add",
-		defaultAlias,
-		userList["user1"].Username,
-		userList["user1"].Password,
-	)
-	fatalIfErrorWMsg(err, out, t)
-
-	out, err = RunMC(
-		"admin",
-		"user",
-		"list",
-		defaultAlias,
-	)
-	fatalIfErrorWMsg(err, out, t)
-	userOutput, err := parseUserMessageListOutput(out)
-	fatalIfErrorWMsg(err, out, t)
-
-	user1found := false
-	for i := range userOutput {
-		if userOutput[i].AccessKey == userList["user1"].Username {
-			user1found = true
-		}
-	}
-
-	if !user1found {
-		fatalMsgOnly(fmt.Sprintf("did not find user %s when running admin user list --json", userList["user1"].Username), t)
-	}
-
-	out, err = RunMC(
-		"admin",
-		"policy",
-		"attach",
-		defaultAlias,
-		"readwrite",
-		"--user="+userList["user1"].Username,
-	)
-	fatalIfErrorWMsg(err, out, t)
-
-	out, err = RunMC(
-		"alias",
-		"set",
-		userList["user1"].Username,
-		protocol+serverEndpoint,
-		userList["user1"].Username,
-		userList["user1"].Password,
-	)
-	fatalIfErrorWMsg(err, out, t)
-
-	out, err = RunMC(
-		"cp",
-		user1File.diskFile.Name(),
-		user1Bucket+"/"+user1File.fileNameWithoutPath,
-	)
-	fatalIfErrorWMsg(err, out, t)
 }
 
 func ShareURLUploadErrorTests(t *testing.T) {
@@ -899,38 +805,6 @@ func CatObjectToStdIn(t *testing.T) {
 			fmt.Sprintf("expecting md5sum (%s) but got md5sum (%s)", file.md5Sum, md5Sum),
 			t,
 		)
-	}
-}
-
-func VerifyKMSKey(t *testing.T) {
-	out, err := RunMC(
-		"admin",
-		"kms",
-		"key",
-		"list",
-		defaultAlias,
-	)
-	fatalIfError(err, t)
-	keyMsg := new(kmsKeysMsg)
-	err = json.Unmarshal([]byte(out), keyMsg)
-	fatalIfError(err, t)
-	sseInvalidKmsKeyName = uuid.NewString()
-	found := false
-	invalidKeyFound := false
-	for _, v := range keyMsg.Keys {
-		if v == sseKMSKeyName {
-			found = true
-			break
-		}
-		if v == sseInvalidKmsKeyName {
-			invalidKeyFound = true
-		}
-	}
-	if !found {
-		fatalMsgOnly(fmt.Sprintf("expected to find kms key %s but got these keys: %v", sseKMSKeyName, keyMsg.Keys), t)
-	}
-	if invalidKeyFound {
-		fatalMsgOnly("tried to create invalid uuid kms key but for some reason it overlapped with an already existing key", t)
 	}
 }
 
@@ -2510,16 +2384,6 @@ func postRunCleanup(t *testing.T) {
 		}
 	}
 
-	for _, v := range userList {
-		_, _ = RunMC(
-			"admin",
-			"user",
-			"remove",
-			defaultAlias,
-			v.Username,
-		)
-	}
-
 	fatalIfError(berr, t)
 	fatalIfError(err, t)
 }
@@ -2807,33 +2671,6 @@ func validateErrorMSGValues(
 		}
 	}
 }
-
-func parseUserMessageListOutput(out string) (users []*userMessage, err error) {
-	users = make([]*userMessage, 0)
-	splitList := bytes.Split([]byte(out), []byte{10})
-	for _, v := range splitList {
-		if len(v) < 1 {
-			continue
-		}
-		msg := new(userMessage)
-		err = json.Unmarshal(v, msg)
-		if err != nil {
-			return
-		}
-		users = append(users, msg)
-	}
-
-	if printRawOut {
-		fmt.Println("USER LIST ------------------------------")
-		for _, v := range users {
-			fmt.Println(v)
-		}
-		fmt.Println(" ------------------------------")
-	}
-
-	return
-}
-
 func parseShareMessageFromJSONOutput(out string) (share *shareMessage, err error) {
 	share = new(shareMessage)
 	err = json.Unmarshal([]byte(out), share)

@@ -37,6 +37,14 @@ import (
 	"github.com/olekukonko/tablewriter"
 )
 
+var colors = []color.Attribute{color.FgCyan, color.FgWhite, color.FgYellow, color.FgGreen}
+
+const (
+	dot           = "●"
+	tickCell      = "✔ "
+	crossTickCell = "✗ "
+)
+
 var replicateStatusFlags = []cli.Flag{
 	cli.StringFlag{
 		Name:  "backlog,b",

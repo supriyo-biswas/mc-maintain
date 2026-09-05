@@ -413,7 +413,6 @@ func checkUpdate(ctx *cli.Context) {
 
 var appCmds = []cli.Command{
 	aliasCmd,
-	adminCmd,
 	anonymousCmd,
 	batchCmd,
 	cpCmd,
@@ -428,7 +427,6 @@ var appCmds = []cli.Command{
 	headCmd,
 	ilmCmd,
 	idpCmd,
-	licenseCmd,
 	legalHoldCmd,
 	lsCmd,
 	mbCmd,
@@ -447,7 +445,6 @@ var appCmds = []cli.Command{
 	readyCmd,
 	sqlCmd,
 	statCmd,
-	supportCmd,
 	shareCmd,
 	treeCmd,
 	tagCmd,

@@ -58,28 +58,6 @@ func (fs fsComplete) Predict(a complete.Args) []string {
 	return complete.PredictFiles("*").Predict(a)
 }
 
-func completeAdminConfigKeys(aliasPath, keyPrefix string) (prediction []string) {
-	// Convert alias/bucket/incompl to alias/bucket/ to list its contents
-	parentDirPath := filepath.Dir(aliasPath) + "/"
-	clnt, err := newAdminClient(parentDirPath)
-	if err != nil {
-		return nil
-	}
-
-	h, e := clnt.HelpConfigKV(globalContext, "", "", false)
-	if e != nil {
-		return nil
-	}
-
-	for _, hkv := range h.KeysHelp {
-		if strings.HasPrefix(hkv.Key, keyPrefix) {
-			prediction = append(prediction, hkv.Key)
-		}
-	}
-
-	return prediction
-}
-
 // Complete S3 path. If the prediction result is only one directory,
 // then recursively scans it. This is needed to satisfy posener/complete
 // (look at posener/complete.PredictFiles)
@@ -113,43 +91,6 @@ func completeS3Path(s3Path string) (prediction []string) {
 		prediction = append(prediction, completeS3Path(prediction[0])...)
 	}
 
-	return
-}
-
-type adminConfigComplete struct{}
-
-func (adm adminConfigComplete) Predict(a complete.Args) (prediction []string) {
-	defer func() {
-		sort.Strings(prediction)
-	}()
-
-	loadMcConfig = loadMcConfigFactory()
-	conf, err := loadMcConfig()
-	if err != nil {
-		return
-	}
-
-	// We have already predicted the keys, we are done.
-	if len(a.Completed) == 3 {
-		return
-	}
-
-	arg := a.Last
-	lastArg := a.LastCompleted
-	if _, ok := conf.Aliases[filepath.Clean(a.LastCompleted)]; !ok {
-		if strings.IndexByte(arg, '/') == -1 {
-			// Only predict alias since '/' is not found
-			for alias := range conf.Aliases {
-				if strings.HasPrefix(alias, arg) {
-					prediction = append(prediction, alias+"/")
-				}
-			}
-		} else {
-			prediction = completeAdminConfigKeys(arg, "")
-		}
-	} else {
-		prediction = completeAdminConfigKeys(lastArg, arg)
-	}
 	return
 }
 
@@ -220,10 +161,9 @@ func (al aliasComplete) Predict(a complete.Args) (prediction []string) {
 }
 
 var (
-	adminConfigCompleter = adminConfigComplete{}
-	s3Completer          = s3Complete{}
-	aliasCompleter       = aliasComplete{}
-	fsCompleter          = fsComplete{}
+	s3Completer    = s3Complete{}
+	aliasCompleter = aliasComplete{}
+	fsCompleter    = fsComplete{}
 )
 
 // The list of all commands supported by mc with their mapping
@@ -314,53 +254,6 @@ var completeCmds = map[string]complete.Predictor{
 
 	"/undo": s3Completer,
 
-	// Admin API commands MinIO only.
-	"/admin/heal": s3Completer,
-
-	"/admin/info": aliasCompleter,
-	"/admin/logs": aliasCompleter,
-
-	"/admin/config/get":     adminConfigCompleter,
-	"/admin/config/set":     adminConfigCompleter,
-	"/admin/config/reset":   adminConfigCompleter,
-	"/admin/config/import":  aliasCompleter,
-	"/admin/config/export":  aliasCompleter,
-	"/admin/config/history": aliasCompleter,
-	"/admin/config/restore": aliasCompleter,
-
-	"/admin/decom/start":         aliasCompleter,
-	"/admin/decom/status":        aliasCompleter,
-	"/admin/decom/cancel":        aliasCompleter,
-	"/admin/decommission/start":  aliasCompleter,
-	"/admin/decommission/status": aliasCompleter,
-	"/admin/decommission/cancel": aliasCompleter,
-
-	"/admin/rebalance/start":  aliasCompleter,
-	"/admin/rebalance/status": aliasCompleter,
-	"/admin/rebalance/stop":   aliasCompleter,
-
-	"/admin/trace":     aliasCompleter,
-	"/admin/speedtest": aliasCompleter,
-	"/admin/console":   aliasCompleter,
-	"/admin/update":    aliasCompleter,
-	"/admin/inspect":   s3Completer,
-	"/admin/top/locks": aliasCompleter,
-	"/admin/top/api":   aliasCompleter,
-
-	"/admin/scanner/status": aliasCompleter,
-	"/admin/scanner/trace":  aliasCompleter,
-
-	"/admin/service/stop":     aliasCompleter,
-	"/admin/service/restart":  aliasCompleter,
-	"/admin/service/freeze":   aliasCompleter,
-	"/admin/service/unfreeze": aliasCompleter,
-
-	"/admin/prometheus/generate": aliasCompleter,
-	"/admin/prometheus/metrics":  aliasCompleter,
-
-	"/admin/profile/start": aliasCompleter,
-	"/admin/profile/stop":  aliasCompleter,
-
 	"/idp/openid/add":     aliasCompleter,
 	"/idp/openid/update":  aliasCompleter,
 	"/idp/openid/remove":  aliasCompleter,
@@ -402,73 +295,6 @@ var completeCmds = map[string]complete.Predictor{
 	"/idp/ldap/accesskey/disable":           aliasCompleter,
 	"/idp/ldap/accesskey/sts-revoke":        aliasCompleter,
 
-	"/admin/accesskey/create":     aliasCompleter,
-	"/admin/accesskey/list":       aliasCompleter,
-	"/admin/accesskey/ls":         aliasCompleter,
-	"/admin/accesskey/remove":     aliasCompleter,
-	"/admin/accesskey/rm":         aliasCompleter,
-	"/admin/accesskey/info":       aliasCompleter,
-	"/admin/accesskey/edit":       aliasCompleter,
-	"/admin/accesskey/enable":     aliasCompleter,
-	"/admin/accesskey/disable":    aliasCompleter,
-	"/admin/accesskey/sts-revoke": aliasCompleter,
-
-	"/admin/policy/info":     aliasCompleter,
-	"/admin/policy/update":   aliasCompleter,
-	"/admin/policy/add":      aliasCompleter,
-	"/admin/policy/remove":   aliasCompleter,
-	"/admin/policy/create":   aliasCompleter,
-	"/admin/policy/list":     aliasCompleter,
-	"/admin/policy/attach":   aliasCompleter,
-	"/admin/policy/detach":   aliasCompleter,
-	"/admin/policy/entities": aliasCompleter,
-
-	"/admin/user/add":     aliasCompleter,
-	"/admin/user/disable": aliasCompleter,
-	"/admin/user/enable":  aliasCompleter,
-	"/admin/user/list":    aliasCompleter,
-	"/admin/user/remove":  aliasCompleter,
-	"/admin/user/info":    aliasCompleter,
-	"/admin/user/policy":  aliasCompleter,
-
-	"/admin/user/svcacct/add":     aliasCompleter,
-	"/admin/user/svcacct/list":    aliasCompleter,
-	"/admin/user/svcacct/remove":  aliasCompleter,
-	"/admin/user/svcacct/info":    aliasCompleter,
-	"/admin/user/svcacct/edit":    aliasCompleter,
-	"/admin/user/svcacct/set":     aliasCompleter,
-	"/admin/user/svcacct/enable":  aliasCompleter,
-	"/admin/user/svcacct/disable": aliasCompleter,
-
-	"/admin/user/sts/info": aliasCompleter,
-
-	"/admin/group/add":     aliasCompleter,
-	"/admin/group/disable": aliasCompleter,
-	"/admin/group/enable":  aliasCompleter,
-	"/admin/group/list":    aliasCompleter,
-	"/admin/group/remove":  aliasCompleter,
-	"/admin/group/info":    aliasCompleter,
-
-	"/admin/bucket/remote/add":    aliasCompleter,
-	"/admin/bucket/remote/edit":   aliasCompleter,
-	"/admin/bucket/remote/remove": aliasCompleter,
-	"/admin/bucket/quota":         aliasCompleter,
-	"/admin/bucket/info":          s3Complete{deepLevel: 2},
-
-	"/admin/kms/key/create": aliasCompleter,
-	"/admin/kms/key/status": aliasCompleter,
-	"/admin/kms/key/list":   aliasCompleter,
-
-	"/admin/subnet/health":   aliasCompleter,
-	"/admin/subnet/register": aliasCompleter,
-
-	"/admin/tier/add":    nil,
-	"/admin/tier/edit":   nil,
-	"/admin/tier/list":   nil,
-	"/admin/tier/info":   nil,
-	"/admin/tier/remove": nil,
-	"/admin/tier/verify": nil,
-
 	"/ilm/tier/info":   nil,
 	"/ilm/tier/list":   nil,
 	"/ilm/tier/add":    nil,
@@ -476,49 +302,11 @@ var completeCmds = map[string]complete.Predictor{
 	"/ilm/tier/check":  nil,
 	"/ilm/tier/remove": nil,
 
-	"/admin/replicate/add":           aliasCompleter,
-	"/admin/replicate/update":        aliasCompleter,
-	"/admin/replicate/edit":          aliasCompleter,
-	"/admin/replicate/info":          aliasCompleter,
-	"/admin/replicate/status":        aliasCompleter,
-	"/admin/replicate/remove":        aliasCompleter,
-	"/admin/replicate/resync/start":  aliasCompleter,
-	"/admin/replicate/resync/cancel": aliasCompleter,
-	"/admin/replicate/resync/status": aliasCompleter,
-
-	"/admin/cluster/bucket/export": aliasCompleter,
-	"/admin/cluster/bucket/import": aliasCompleter,
-	"/admin/cluster/iam/export":    aliasCompleter,
-	"/admin/cluster/iam/import":    aliasCompleter,
-
 	"/alias/set":    nil,
 	"/alias/list":   aliasCompleter,
 	"/alias/remove": aliasCompleter,
 	"/alias/import": nil,
 	"/alias/export": aliasCompleter,
-
-	"/support/callhome":     aliasCompleter,
-	"/support/register":     aliasCompleter,
-	"/support/diag":         aliasCompleter,
-	"/support/profile":      aliasCompleter,
-	"/support/proxy/set":    aliasCompleter,
-	"/support/proxy/show":   aliasCompleter,
-	"/support/proxy/remove": aliasCompleter,
-	"/support/inspect":      aliasCompleter,
-	"/support/perf":         aliasCompleter,
-	"/support/metrics":      aliasCompleter,
-	"/support/status":       aliasCompleter,
-	"/support/top/locks":    aliasCompleter,
-	"/support/top/api":      aliasCompleter,
-	"/support/top/drive":    aliasCompleter,
-	"/support/top/disk":     aliasCompleter,
-	"/support/top/net":      aliasCompleter,
-	"/support/top/rpc":      aliasCompleter,
-	"/support/upload":       aliasCompleter,
-
-	"/license/register": aliasCompleter,
-	"/license/info":     aliasCompleter,
-	"/license/update":   aliasCompleter,
 
 	"/update":         nil,
 	"/ready":          aliasCompleter,

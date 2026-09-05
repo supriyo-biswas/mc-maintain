@@ -19,6 +19,10 @@ import (
 	"github.com/olekukonko/tablewriter"
 )
 
+var whiteStyle = lipgloss.NewStyle().
+	Bold(true).
+	Foreground(lipgloss.Color("#ffffff"))
+
 var batchStatusCmd = cli.Command{
 	Name:            "status",
 	Usage:           "summarize job events on MinIO server in real-time",

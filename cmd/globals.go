@@ -25,14 +25,12 @@ import (
 	"net"
 	"net/http"
 	"net/netip"
-	"net/url"
 	"strings"
 	"time"
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/dustin/go-humanize"
 	"github.com/minio/cli"
-	"github.com/minio/madmin-go/v3"
 	"github.com/minio/pkg/v3/console"
 	"github.com/muesli/termenv"
 	"golang.org/x/net/http/httpguts"
@@ -67,24 +65,16 @@ const (
 )
 
 var (
-	globalQuiet        = false               // Quiet flag set via command line
-	globalJSON         = false               // Json flag set via command line
-	globalJSONLine     = false               // Print json as single line.
-	globalDebug        = false               // Debug flag set via command line
-	globalNoColor      = false               // No Color flag set via command line
-	globalInsecure     = false               // Insecure flag set via command line
-	globalResolvers    map[string]netip.Addr // Custom mappings from HOST[:PORT] to IP
-	globalAirgapped    = false               // Airgapped flag set via command line
-	globalSubnetConfig []madmin.SubsysConfig // Subnet config
-
-	// GlobalDevMode is set to true if the program is running in development mode
-	GlobalDevMode = false
+	globalQuiet     = false               // Quiet flag set via command line
+	globalJSON      = false               // Json flag set via command line
+	globalJSONLine  = false               // Print json as single line.
+	globalDebug     = false               // Debug flag set via command line
+	globalNoColor   = false               // No Color flag set via command line
+	globalInsecure  = false               // Insecure flag set via command line
+	globalResolvers map[string]netip.Addr // Custom mappings from HOST[:PORT] to IP
 
 	// GlobalTrapSignals is set to true if need to trap the registered signals and cancel the global context.
 	GlobalTrapSignals = true
-
-	// GlobalSubnetProxyURL is the proxy to be used for communication with subnet
-	GlobalSubnetProxyURL *url.URL
 
 	globalConnReadDeadline  time.Duration
 	globalConnWriteDeadline time.Duration
@@ -112,18 +102,12 @@ func setGlobalsFromContext(ctx *cli.Context) error {
 	json := ctx.Bool("json") || ctx.GlobalBool("json")
 	noColor := ctx.Bool("no-color") || ctx.GlobalBool("no-color")
 	insecure := ctx.Bool("insecure") || ctx.GlobalBool("insecure")
-	devMode := ctx.Bool("dev") || ctx.GlobalBool("dev")
-	airgapped := ctx.Bool("airgap") || ctx.GlobalBool("airgap")
-
 	globalQuiet = globalQuiet || quiet
 	globalDebug = globalDebug || debug
 	globalJSONLine = !isTerminal() && json
 	globalJSON = globalJSON || json
 	globalNoColor = globalNoColor || noColor || globalJSONLine
 	globalInsecure = globalInsecure || insecure
-	GlobalDevMode = GlobalDevMode || devMode
-	globalAirgapped = globalAirgapped || airgapped
-
 	// Disable colorified messages if requested.
 	if globalNoColor || globalQuiet {
 		console.SetColorOff()

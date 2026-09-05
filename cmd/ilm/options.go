@@ -317,8 +317,7 @@ func GetLifecycleOptions(ctx *cli.Context) (LifecycleOptions, *probe.Error) {
 	if noncurrentTier != nil && !ctx.IsSet("noncurrentversion-transition-days") && !ctx.IsSet("noncurrent-transition-days") {
 		return LifecycleOptions{}, probe.NewError(errors.New("noncurrentversion-transition-days must be set"))
 	}
-	// for MinIO transition storage-class is same as label defined on
-	// `mc admin bucket remote add --service ilm --label` command
+	// for MinIO, the transition storage class is the configured tier label.
 	if ctx.IsSet("tags") {
 		tags = strPtr(ctx.String("tags"))
 	}

@@ -160,7 +160,7 @@ source /etc/bash_completion.d/mc
 
 ```
 mc <TAB>
-admin    config   diff     ls       mirror   policy   session  update   watch
+config   diff     ls       mirror   policy   session  update   watch
 cat      cp       events   mb       pipe     rm       share    version
 ```
 
