@@ -202,6 +202,7 @@ func mainHead(ctx *cli.Context) error {
 		fatalIf(headOut(os.Stdin, ctx.Int64("lines")).Trace(), "Unable to read from standard input.")
 		return nil
 	}
+	fatalIf(requireAliasedURLsOrStdin(ctx.Command.Name, args...), "")
 
 	// Convert arguments to URLs: expand alias, fix format.
 	for _, url := range ctx.Args() {

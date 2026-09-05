@@ -35,6 +35,7 @@ func checkCopySyntax(cliCtx *cli.Context) {
 	if len(URLs) < 2 {
 		fatalIf(errDummy().Trace(cliCtx.Args()...), "Unable to parse source and target arguments.")
 	}
+	fatalIf(requireAnyAliasedURL(cliCtx.Command.Name, URLs...), "")
 
 	srcURLs := URLs[:len(URLs)-1]
 	tgtURL := URLs[len(URLs)-1]

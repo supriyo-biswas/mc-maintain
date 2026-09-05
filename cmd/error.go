@@ -115,7 +115,7 @@ func fatal(err *probe.Error, msg string, data ...any) {
 		}
 	}
 
-	console.Fatalln(fmt.Sprintf("%s %s", msg, errmsg))
+	console.Fatalln(strings.TrimSpace(msg + " " + errmsg))
 }
 
 // Exit coder wraps cli new exit error with a

@@ -238,6 +238,7 @@ func mainDu(cliCtx *cli.Context) error {
 
 	var duErr error
 	var isDir bool
+	fatalIf(requireAliasedURLs(cliCtx.Command.Name, cliCtx.Args()...), "")
 	for _, urlStr := range cliCtx.Args() {
 		isDir, _ = isAliasURLDir(ctx, urlStr, nil, time.Time{}, false)
 		if !isDir {

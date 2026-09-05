@@ -560,6 +560,47 @@ func newClient(aliasedURL string) (Client, *probe.Error) {
 	return newClientFromAlias(alias, urlStrFull)
 }
 
+// requireAliasedURLs ensures every URL belongs to a configured S3 alias.
+func requireAliasedURLs(command string, URLs ...string) *probe.Error {
+	for _, URL := range URLs {
+		_, _, aliasCfg, err := expandAlias(URL)
+		if err != nil {
+			return err.Trace(URL)
+		}
+		if aliasCfg == nil {
+			return errLocalFilesystemOperation(command, URL)
+		}
+	}
+	return nil
+}
+
+// requireAliasedURLsOrStdin also accepts the standard input operand.
+func requireAliasedURLsOrStdin(command string, URLs ...string) *probe.Error {
+	for _, URL := range URLs {
+		if URL == "-" {
+			continue
+		}
+		if err := requireAliasedURLs(command, URL); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// requireAnyAliasedURL ensures a transfer has at least one S3 endpoint.
+func requireAnyAliasedURL(command string, URLs ...string) *probe.Error {
+	for _, URL := range URLs {
+		_, _, aliasCfg, err := expandAlias(URL)
+		if err != nil {
+			return err.Trace(URL)
+		}
+		if aliasCfg != nil {
+			return nil
+		}
+	}
+	return errLocalFilesystemTransfer(command)
+}
+
 // ParseForm parses a http.Request form and populates the array
 func ParseForm(r *http.Request) error {
 	if err := r.ParseForm(); err != nil {

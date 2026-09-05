@@ -100,6 +100,7 @@ func checkRbSyntax(cliCtx *cli.Context) {
 		exitCode := 1
 		cli.ShowCommandHelpAndExit(cliCtx, cliCtx.Command.Name, exitCode)
 	}
+	fatalIf(requireAliasedURLs(cliCtx.Command.Name, cliCtx.Args()...), "")
 	// Set command flags from context.
 	isForce := cliCtx.Bool("force")
 	isDangerous := cliCtx.Bool("dangerous")

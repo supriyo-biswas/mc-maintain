@@ -64,8 +64,8 @@ EXAMPLES:
   1. Compare a local folder with a folder on Amazon S3 cloud storage.
      {{.Prompt}} {{.HelpName}} ~/Photos s3/mybucket/Photos
 
-  2. Compare two folders on a local filesystem.
-     {{.Prompt}} {{.HelpName}} ~/Photos /Media/Backup/Photos
+  2. Compare folders on two object storage services.
+     {{.Prompt}} {{.HelpName}} s3/mybucket/Photos backup/mybucket/Photos
 `,
 }
 
@@ -126,6 +126,7 @@ func checkDiffSyntax(ctx context.Context, cliCtx *cli.Context, encKeyDB map[stri
 	URLs := cliCtx.Args()
 	firstURL := URLs[0]
 	secondURL := URLs[1]
+	fatalIf(requireAnyAliasedURL(cliCtx.Command.Name, firstURL, secondURL), "")
 
 	// Diff only works between two directories, verify them below.
 

@@ -124,7 +124,7 @@ UNITS
 
 FORMAT
   Support string substitutions with special interpretations for following keywords.
-  Keywords supported if target is filesystem or object storage:
+  Keywords supported for object storage targets:
 
      {}        --> Substitutes to full path.
      {base}    --> Substitutes to basename of path.
@@ -178,7 +178,7 @@ EXAMPLES:
 func checkFindSyntax(ctx context.Context, cliCtx *cli.Context, encKeyDB map[string][]prefixSSEPair) {
 	args := cliCtx.Args()
 	if !args.Present() {
-		args = []string{"./"} // No args just default to present directory.
+		cli.ShowCommandHelpAndExit(cliCtx, cliCtx.Command.Name, 1)
 	} else if args.Get(0) == "." {
 		args[0] = "./" // If the arg is '.' treat it as './'.
 	}
@@ -188,6 +188,7 @@ func checkFindSyntax(ctx context.Context, cliCtx *cli.Context, encKeyDB map[stri
 			fatalIf(errInvalidArgument().Trace(args...), "Unable to validate empty argument.")
 		}
 	}
+	fatalIf(requireAliasedURLs(cliCtx.Command.Name, args...), "")
 
 	// Extract input URLs and validate.
 	for _, url := range args {
@@ -246,9 +247,7 @@ func mainFind(cliCtx *cli.Context) error {
 	checkFindSyntax(ctx, cliCtx, encKeyDB)
 
 	args := cliCtx.Args()
-	if !args.Present() {
-		args = []string{"./"} // Not args present default to present directory.
-	} else if args.Get(0) == "." {
+	if args.Get(0) == "." {
 		args[0] = "./" // If the arg is '.' treat it as './'.
 	}
 

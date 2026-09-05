@@ -84,8 +84,6 @@ EXAMPLES:
   5. Site level watch (except new buckets created after running this command)
      {{.Prompt}} {{.HelpName}} play/
 
-  6. Watch for events on local directory.
-     {{.Prompt}} {{.HelpName}} /usr/share
 `,
 }
 
@@ -94,6 +92,7 @@ func checkWatchSyntax(ctx *cli.Context) {
 	if len(ctx.Args()) != 1 {
 		cli.ShowCommandHelpAndExit(ctx, ctx.Command.Name, 1) // last argument is exit code
 	}
+	fatalIf(requireAliasedURLs(ctx.Command.Name, ctx.Args()...), "")
 }
 
 // watchMessage container to hold one event notification

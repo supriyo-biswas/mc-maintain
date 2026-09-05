@@ -63,6 +63,20 @@ var errInvalidAliasedURL = func(URL string) *probe.Error {
 	return probe.NewError(invalidAliasedURLErr(errors.New(msg))).Untrace()
 }
 
+type localFilesystemOperationErr error
+
+var errLocalFilesystemOperation = func(command, URL string) *probe.Error {
+	msg := fmt.Sprintf("Command `mc %s` requires a configured S3 alias; `%s` resolves to the local filesystem", command, URL)
+	return probe.NewError(localFilesystemOperationErr(errors.New(msg))).Untrace()
+}
+
+type localFilesystemTransferErr error
+
+var errLocalFilesystemTransfer = func(command string) *probe.Error {
+	msg := fmt.Sprintf("Command `mc %s` requires at least one source or target to use a configured S3 alias", command)
+	return probe.NewError(localFilesystemTransferErr(errors.New(msg))).Untrace()
+}
+
 type invalidAliasErr error
 
 var errInvalidAlias = func(alias string) *probe.Error {

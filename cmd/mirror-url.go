@@ -47,6 +47,7 @@ func checkMirrorSyntax(ctx context.Context, cliCtx *cli.Context, encKeyDB map[st
 	URLs := cliCtx.Args()
 	srcURL = URLs[0]
 	tgtURL = URLs[1]
+	fatalIf(requireAnyAliasedURL(cliCtx.Command.Name, srcURL, tgtURL), "")
 
 	if cliCtx.Bool("force") && cliCtx.Bool("remove") {
 		errorIf(errInvalidArgument().Trace(URLs...), "`--force` is deprecated, please use `--overwrite` instead with `--remove` for the same functionality.")

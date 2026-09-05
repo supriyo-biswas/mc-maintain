@@ -147,6 +147,7 @@ func mainPut(cliCtx *cli.Context) (e error) {
 	// get source and target
 	sourceURLs := args[:len(args)-1]
 	targetURL := args[len(args)-1]
+	fatalIf(requireAliasedURLs(cliCtx.Command.Name, targetURL), "")
 
 	putURLsCh := make(chan URLs, 10000)
 	var totalObjects, totalBytes int64

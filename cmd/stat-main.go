@@ -86,17 +86,14 @@ EXAMPLES:
   3. Stat all contents of mybucket on Amazon S3 cloud storage on Microsoft Windows.
      {{.Prompt}} {{.HelpName}} s3\mybucket\
 
-  4. Stat files recursively on a local filesystem on Microsoft Windows.
-     {{.Prompt}} {{.HelpName}} --recursive C:\Users\mydocuments\
-
-  5. Stat encrypted files on Amazon S3 cloud storage. In case the encryption key contains non-printable character like tab, pass the
+  4. Stat encrypted files on Amazon S3 cloud storage. In case the encryption key contains non-printable character like tab, pass the
      base64 encoded string as key.
      {{.Prompt}} {{.HelpName}} --enc-c "s3/personal-document/=MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTIzNDU2Nzg5MDA" s3/personal-document/2019-account_report.docx
 
-  6. Stat a specific object version.
+  5. Stat a specific object version.
      {{.Prompt}} {{.HelpName}} --version-id "CL3sWgdSN2pNntSf6UnZAuh2kcu8E8si" s3/personal-docs/2018-account_report.docx
 
-  7. Stat all objects versions recursively created before 1st January 2020.
+  6. Stat all objects versions recursively created before 1st January 2020.
      {{.Prompt}} {{.HelpName}} --versions --rewind 2020.01.01T00:00 s3/personal-docs/
 `,
 }
@@ -113,6 +110,7 @@ func parseAndCheckStatSyntax(ctx context.Context, cliCtx *cli.Context) ([]string
 			fatalIf(errInvalidArgument().Trace(args...), "Unable to validate empty argument.")
 		}
 	}
+	fatalIf(requireAliasedURLs(cliCtx.Command.Name, args...), "")
 
 	recursive := cliCtx.Bool("recursive")
 	versionID := cliCtx.String("version-id")

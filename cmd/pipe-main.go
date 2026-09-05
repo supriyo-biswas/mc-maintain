@@ -91,28 +91,25 @@ ENVIRONMENT VARIABLES:
   MC_ENC_S3: S3 encryption key in the form of (alias/prefix=key).
 
 EXAMPLES:
-  1. Write contents of stdin to a file on local filesystem.
-     {{.Prompt}} {{.HelpName}} /tmp/hello-world.go
-
-  2. Write contents of stdin to an object on Amazon S3 cloud storage.
+  1. Write contents of stdin to an object on Amazon S3 cloud storage.
      {{.Prompt}} {{.HelpName}} s3/personalbuck/meeting-notes.txt
 
-  3. Copy an ISO image to an object on Amazon S3 cloud storage.
+  2. Copy an ISO image to an object on Amazon S3 cloud storage.
      {{.Prompt}} cat debian-8.2.iso | {{.HelpName}} s3/opensource-isos/gnuos.iso
 
-  4. Copy an ISO image to an object on minio storage using KMS encryption.
+  3. Copy an ISO image to an object on minio storage using KMS encryption.
      {{.Prompt}} cat debian-8.2.iso | {{.HelpName}} --enc-kms="minio/opensource-isos=my-key-name" minio/opensource-isos/gnuos.iso
 
-  5. Stream MySQL database dump to Amazon S3 directly.
+  4. Stream MySQL database dump to Amazon S3 directly.
      {{.Prompt}} mysqldump -u root -p ******* accountsdb | {{.HelpName}} s3/sql-backups/backups/accountsdb-oct-9-2015.sql
 
-  6. Write contents of stdin to an object on Amazon S3 cloud storage and assign REDUCED_REDUNDANCY storage-class to the uploaded object.
+  5. Write contents of stdin to an object on Amazon S3 cloud storage and assign REDUCED_REDUNDANCY storage-class to the uploaded object.
      {{.Prompt}} {{.HelpName}} --storage-class REDUCED_REDUNDANCY s3/personalbuck/meeting-notes.txt
 
-  7. Copy to MinIO cloud storage with specified metadata, separated by ";"
+  6. Copy to MinIO cloud storage with specified metadata, separated by ";"
       {{.Prompt}} cat music.mp3 | {{.HelpName}} --attr "Cache-Control=max-age=90000,min-fresh=9000;Artist=Unknown" play/mybucket/music.mp3
 
-  8. Set tags to the uploaded objects
+  7. Set tags to the uploaded objects
       {{.Prompt}} tar cvf - . | {{.HelpName}} --tags "category=prod&type=backup" play/mybucket/backup.tar
 `,
 }
@@ -212,6 +209,7 @@ func checkPipeSyntax(ctx *cli.Context) {
 	if len(ctx.Args()) != 1 {
 		cli.ShowCommandHelpAndExit(ctx, ctx.Command.Name, 1) // last argument is exit code.
 	}
+	fatalIf(requireAliasedURLs(ctx.Command.Name, ctx.Args()...), "")
 }
 
 // mainPipe is the main entry point for pipe command.

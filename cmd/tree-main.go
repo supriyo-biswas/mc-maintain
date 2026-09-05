@@ -115,6 +115,9 @@ EXAMPLES:
 // parseTreeSyntax - validate all the passed arguments
 func parseTreeSyntax(ctx context.Context, cliCtx *cli.Context) (args []string, depth int, files bool, timeRef time.Time) {
 	args = cliCtx.Args()
+	if len(args) == 0 {
+		cli.ShowCommandHelpAndExit(cliCtx, cliCtx.Command.Name, 1)
+	}
 	depth = cliCtx.Int("depth")
 	files = cliCtx.Bool("files")
 
@@ -126,9 +129,7 @@ func parseTreeSyntax(ctx context.Context, cliCtx *cli.Context) (args []string, d
 			"please set a proper depth, for example: '--depth 1' to limit the tree output, default (-1) output displays everything")
 	}
 
-	if len(args) == 0 {
-		return
-	}
+	fatalIf(requireAliasedURLs(cliCtx.Command.Name, args...), "")
 
 	for _, url := range args {
 		_, _, err := url2Stat(ctx, url2StatOptions{urlStr: url, versionID: "", fileAttr: false, encKeyDB: nil, timeRef: timeRef, isZip: false, ignoreBucketExistsCheck: false})

@@ -93,24 +93,21 @@ EXAMPLES:
   4. List all contents of mybucket on Amazon S3 cloud storage on Microsoft Windows.
      {{.Prompt}} {{.HelpName}} s3\mybucket\
 
-  5. List files recursively on a local filesystem on Microsoft Windows.
-     {{.Prompt}} {{.HelpName}} --recursive C:\Users\Worf\
-
-  6. List incomplete (previously failed) uploads of objects on Amazon S3.
+  5. List incomplete (previously failed) uploads of objects on Amazon S3.
      {{.Prompt}} {{.HelpName}} --incomplete s3/mybucket
 
-  7. List contents at a specific time in the past if the bucket versioning is enabled.
+  6. List contents at a specific time in the past if the bucket versioning is enabled.
      {{.Prompt}} {{.HelpName}} --rewind 2020.01.01 s3/mybucket
      {{.Prompt}} {{.HelpName}} --rewind 2020.01.01T11:30 s3/mybucket
      {{.Prompt}} {{.HelpName}} --rewind 7d s3/mybucket
 
-  8. List all contents versions if the bucket versioning is enabled.
+  7. List all contents versions if the bucket versioning is enabled.
      {{.Prompt}} {{.HelpName}} --versions s3/mybucket
 
-  9. List all objects on mybucket, summarize the number of objects and total size.
+  8. List all objects on mybucket, summarize the number of objects and total size.
      {{.Prompt}} {{.HelpName}} --summarize s3/mybucket/
   
-  10. List all objects on mybucket, for the GLACIER storage class
+  9. List all objects on mybucket, for the GLACIER storage class
      {{.Prompt}} {{.HelpName}} --storage-class 'GLACIER' s3/mybucket 
 `,
 }
@@ -161,13 +158,14 @@ func parseRewindFlag(rewind string) (timeRef time.Time) {
 func checkListSyntax(cliCtx *cli.Context) ([]string, doListOptions) {
 	args := cliCtx.Args()
 	if !cliCtx.Args().Present() {
-		args = []string{"."}
+		cli.ShowCommandHelpAndExit(cliCtx, cliCtx.Command.Name, 1)
 	}
 	for _, arg := range args {
 		if strings.TrimSpace(arg) == "" {
 			fatalIf(errInvalidArgument().Trace(args...), "Unable to validate empty argument.")
 		}
 	}
+	fatalIf(requireAliasedURLs(cliCtx.Command.Name, args...), "")
 
 	isRecursive := cliCtx.Bool("recursive")
 	isIncomplete := cliCtx.Bool("incomplete")

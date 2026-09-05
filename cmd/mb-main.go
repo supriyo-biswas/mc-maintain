@@ -116,6 +116,7 @@ func checkMakeBucketSyntax(cliCtx *cli.Context) {
 	if !cliCtx.Args().Present() {
 		cli.ShowCommandHelpAndExit(cliCtx, cliCtx.Command.Name, 1) // last argument is exit code
 	}
+	fatalIf(requireAliasedURLs(cliCtx.Command.Name, cliCtx.Args()...), "")
 }
 
 // mainMakeBucket is entry point for mb command.

@@ -227,6 +227,7 @@ func checkAnonymousSyntax(ctx *cli.Context) {
 	default:
 		cli.ShowCommandHelpAndExit(ctx, ctx.Command.Name, 1)
 	}
+	fatalIf(requireAliasedURLs(ctx.Command.Name, ctx.Args().Get(argsLength-1)), "")
 }
 
 // Convert an accessPerms to a string recognizable by minio-go

@@ -218,6 +218,9 @@ func checkRmSyntax(ctx context.Context, cliCtx *cli.Context) {
 	versionID := cliCtx.String("version-id")
 	rewind := cliCtx.String("rewind")
 	isNamespaceRemoval := false
+	if cliCtx.Args().Present() {
+		fatalIf(requireAliasedURLs(cliCtx.Command.Name, cliCtx.Args()...), "")
+	}
 
 	if versionID != "" && (isRecursive || isVersions || rewind != "") {
 		fatalIf(errDummy().Trace(),
@@ -763,6 +766,7 @@ func mainRm(cliCtx *cli.Context) error {
 	scanner := bufio.NewScanner(os.Stdin)
 	for scanner.Scan() {
 		url := scanner.Text()
+		fatalIf(requireAliasedURLs(cliCtx.Command.Name, url), "")
 		if isRecursive || withVersions {
 			e = listAndRemove(url, removeOpts{
 				timeRef:           rewind,

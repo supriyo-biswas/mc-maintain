@@ -83,11 +83,11 @@ EXAMPLES:
   1. Stream an object from Amazon S3 cloud storage to mplayer standard input.
      {{.Prompt}} {{.HelpName}} s3/mysql-backups/kubecon-mysql-operator.mpv | mplayer -
 
-  2. Concatenate contents of file1.txt and stdin to standard output.
-     {{.Prompt}} {{.HelpName}} file1.txt - > file.txt
+  2. Concatenate an object and stdin to standard output.
+     {{.Prompt}} {{.HelpName}} s3/mybucket/file1.txt - > file.txt
 
-  3. Concatenate multiple files to one.
-     {{.Prompt}} {{.HelpName}} part.* > complete.img
+  3. Concatenate multiple objects to one local file.
+     {{.Prompt}} {{.HelpName}} s3/mybucket/part.1 s3/mybucket/part.2 > complete.img
 
   4. Save an encrypted object from Amazon S3 cloud storage to a local file.
      {{.Prompt}} {{.HelpName}} --enc-c "play/my-bucket/=MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTIzNDU2Nzg5MDA" s3/mysql-backups/backups-201810.gz > /mnt/data/recent.gz
@@ -335,6 +335,7 @@ func mainCat(cliCtx *cli.Context) error {
 
 	// check 'cat' cli arguments.
 	o := parseCatSyntax(cliCtx)
+	fatalIf(requireAliasedURLsOrStdin(cliCtx.Command.Name, o.args...), "")
 
 	// handle std input data.
 	if o.stdinMode {
