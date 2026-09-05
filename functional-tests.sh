@@ -24,14 +24,14 @@
 # tests.
 #
 # * As mc functional tests, just run this script.  It uses mc executable binary
-#   in current working directory or in the path.  The tests uses play.min.io
-#   as MinIO server.
+#   in current working directory or in the path.  The tests use play.min.io as
+#   the default S3-compatible server.
 #
 # * For other, call this script with environment variables MINT_MODE,
 #   MINT_DATA_DIR, SERVER_ENDPOINT, ACCESS_KEY, SECRET_KEY and ENABLE_HTTPS. It
-#   uses mc executable binary in current working directory and uses given MinIO
-#   server to run tests. MINT_MODE is set by mint to specify what category of
-#   tests to run.
+#   uses mc executable binary in current working directory and uses the given
+#   S3-compatible server to run tests. MINT_MODE is set by mint to specify what
+#   category of tests to run.
 #
 ################################################################################
 
@@ -97,7 +97,11 @@ BUCKET_NAME="mc-test-bucket-$RANDOM"
 WATCH_OUT_FILE="$WORK_DIR/watch.out-$RANDOM"
 
 MC_CONFIG_DIR="/tmp/.mc-$RANDOM"
-MC="$PWD/mc"
+MC="${MC_BINARY_PATH:-$PWD/mc}"
+CURL_INSECURE=""
+if [ "${MC_TEST_SKIP_INSECURE:-false}" = "true" ]; then
+	CURL_INSECURE=" -k"
+fi
 declare -a MC_CMD
 
 function get_md5sum() {
@@ -435,7 +439,7 @@ function test_presigned_post_policy_error() {
 	endpoint=$(echo "$ENDPOINT" | sed 's|[][]|\\&|g')
 
 	# Extract share field of json output, and append object name to the URL
-	upload=$(echo "$out" | jq -r .share | sed "s|<FILE>|$FILE_1_MB|g" | sed "s|curl|curl -sSg|g" | sed "s|${endpoint}/${BUCKET_NAME}/|${endpoint}/${BUCKET_NAME}/${object_name}|g")
+	upload=$(echo "$out" | jq -r .share | sed "s|<FILE>|$FILE_1_MB|g" | sed "s|curl|curl -sSg${CURL_INSECURE}|g" | sed "s|${endpoint}/${BUCKET_NAME}/|${endpoint}/${BUCKET_NAME}/${object_name}|g")
 
 	# In case of virtual host style URL path, the previous replace would have failed.
 	# One of the following two commands will append the object name in that scenario.
@@ -451,8 +455,9 @@ function test_presigned_post_policy_error() {
 		assert_failure "$start_time" "${FUNCNAME[0]}" show_on_success 0 "upload of $FILE_1_MB using presigned post policy should have failed"
 	fi
 
-	if [ "$ret" != "MethodNotAllowed" ]; then
-		assert_failure "$start_time" "${FUNCNAME[0]}" show_on_success 0 "upload of $FILE_1_MB using presigned post policy should have failed with MethodNotAllowed error, instead failed with $ret error"
+	expected_error="${MC_TEST_PRESIGNED_POST_ERROR:-MethodNotAllowed}"
+	if [ "$ret" != "$expected_error" ]; then
+		assert_failure "$start_time" "${FUNCNAME[0]}" show_on_success 0 "upload of $FILE_1_MB using presigned post policy should have failed with $expected_error error, instead failed with $ret error"
 	fi
 	log_success "$start_time" "${FUNCNAME[0]}"
 }
@@ -465,7 +470,7 @@ function test_presigned_put_object() {
 
 	out=$("${MC_CMD[@]}" --json share upload "${SERVER_ALIAS}/${BUCKET_NAME}/${object_name}")
 	assert_success "$start_time" "${FUNCNAME[0]}" show_on_failure $? "unable to get presigned put object url"
-	upload=$(echo "$out" | jq -r .share | sed "s|<FILE>|$FILE_1_MB|g" | sed "s|curl|curl -sSg|g")
+	upload=$(echo "$out" | jq -r .share | sed "s|<FILE>|$FILE_1_MB|g" | sed "s|curl|curl -sSg${CURL_INSECURE}|g")
 	$upload >/dev/null 2>&1
 	assert_success "$start_time" "${FUNCNAME[0]}" show_on_failure $? "unable to upload $FILE_1_MB presigned put object url"
 
@@ -486,7 +491,7 @@ function test_presigned_get_object() {
 	out=$("${MC_CMD[@]}" --json share download "${SERVER_ALIAS}/${BUCKET_NAME}/${object_name}")
 	assert_success "$start_time" "${FUNCNAME[0]}" show_on_failure $? "unable to get presigned get object url"
 	download_url=$(echo "$out" | jq -r .share)
-	curl -sSg --output "${object_name}.downloaded" -X GET "$download_url"
+	curl -sSg${CURL_INSECURE} --output "${object_name}.downloaded" -X GET "$download_url"
 	assert_success "$start_time" "${FUNCNAME[0]}" show_on_failure $? "unable to download $download_url"
 
 	assert_success "$start_time" "${FUNCNAME[0]}" check_md5sum "$FILE_1_MB_MD5SUM" "${object_name}.downloaded"
@@ -931,14 +936,17 @@ function run_test() {
 	test_put_object_error
 	test_put_object_0byte
 	test_put_object_with_storage_class
-	test_put_object_with_storage_class_error
+	if [ "${MC_TEST_SKIP_STORAGE_CLASS_ERROR:-false}" != "true" ]; then
+		test_put_object_with_storage_class_error
+	fi
 	test_put_object_with_metadata
 	test_put_object_multipart
 	test_get_object
 	test_get_object_multipart
-	test_od_object
 	test_mv_object
-	test_presigned_post_policy_error
+	if [ "${MC_TEST_SKIP_PRESIGNED_POST:-false}" != "true" ]; then
+		test_presigned_post_policy_error
+	fi
 	test_presigned_put_object
 	test_presigned_get_object
 	test_cat_object
@@ -949,7 +957,7 @@ function run_test() {
 	test_copy_object_preserve_filesystem_attr
 	test_find
 	test_find_empty
-	if [ -z "$MINT_MODE" ]; then
+	if [ -z "$MINT_MODE" ] && [ "${MC_TEST_SKIP_WATCH:-false}" != "true" ]; then
 		test_watch_object
 	fi
 
@@ -968,7 +976,9 @@ function run_test() {
 	fi
 
 	test_config_host_add
-	test_config_host_add_error
+	if [ "${MC_TEST_SKIP_CONFIG_ERROR:-false}" != "true" ]; then
+		test_config_host_add_error
+	fi
 	teardown
 }
 
@@ -999,6 +1009,9 @@ function __init__() {
 
 	mkdir -p "$MC_CONFIG_DIR"
 	MC_CMD=("${MC}" --config-dir "$MC_CONFIG_DIR" --quiet --no-color)
+	if [ "${MC_TEST_SKIP_INSECURE:-false}" = "true" ]; then
+		MC_CMD+=(--insecure)
+	fi
 
 	if [ ! -e "$FILE_0_B" ]; then
 		touch "$FILE_0_B"

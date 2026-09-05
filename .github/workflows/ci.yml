@@ -2,13 +2,11 @@ name: CI
 
 on:
   pull_request:
-    branches:
-      - master
   push:
     branches:
-      - master
+      - "**"
     tags:
-      - 'RELEASE.*'
+      - "RELEASE.*"
 
 permissions:
   contents: read
@@ -62,12 +60,68 @@ jobs:
       - name: Run govulncheck
         run: govulncheck ./...
 
-  build:
-    name: Build release artifacts
+  build-linux-amd64-for-integration:
+    name: Build Linux AMD64 integration binary
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v5
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Build Linux AMD64 binary
+        run: .github/scripts/build-linux-amd64.sh mc-linux-amd64
+
+      - name: Upload Linux AMD64 binary
+        uses: actions/upload-artifact@v7
+        with:
+          name: mc-linux-amd64-${{ github.run_id }}-${{ github.run_attempt }}
+          path: mc-linux-amd64
+          if-no-files-found: error
+          retention-days: 7
+
+  integration:
+    name: Integration tests with ${{ matrix.backend }}
+    needs: [unit, vulncheck, build-linux-amd64-for-integration]
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        backend: [minio, rustfs, garage, seaweedfs]
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Download build outputs
+        uses: actions/download-artifact@v4
+        with:
+          name: mc-linux-amd64-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .integration
+
+      - name: Install Linux binary
+        run: install -m 0755 .integration/mc-linux-amd64 mc
+
+      - name: Run integration tests
+        run: .github/scripts/run-integration-tests.sh "${{ matrix.backend }}" "$GITHUB_WORKSPACE/mc"
+
+  goreleaser:
+    name: Build release artifacts with Goreleaser
     if: >-
       github.event_name == 'push' &&
       (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/RELEASE.'))
-    needs: [unit, vulncheck]
+    needs: integration
     runs-on: ubuntu-latest
     steps:
       - name: Check out tagged source
@@ -86,7 +140,7 @@ jobs:
         uses: goreleaser/goreleaser-action@v7
         with:
           distribution: goreleaser
-          version: '~> v2'
+          version: "~> v2"
           args: release --clean --snapshot --skip=publish
 
       - name: Build tagged artifacts
@@ -94,7 +148,7 @@ jobs:
         uses: goreleaser/goreleaser-action@v7
         with:
           distribution: goreleaser
-          version: '~> v2'
+          version: "~> v2"
           args: release --clean --skip=publish --skip=validate
 
       - name: Upload build outputs
@@ -105,75 +159,10 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
-  integration:
-    name: Integration tests with Linux binary
-    if: >-
-      github.event_name == 'push' &&
-      (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/RELEASE.'))
-    needs: build
-    runs-on: ubuntu-latest
-    env:
-      ACCESS_KEY: minioadmin
-      SECRET_KEY: minioadmin
-      ENABLE_HTTPS: 1
-      MINIO_CI_CD: 1
-      SERVER_ENDPOINT: localhost:9000
-      MC_TEST_ENABLE_HTTPS: true
-      MC_TEST_SKIP_INSECURE: true
-      MC_TEST_SKIP_BUILD: true
-      MC_TEST_RUN_FULL_SUITE: true
-      MC_TEST_BINARY_PATH: ${{ github.workspace }}/mc
-      GO111MODULE: on
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
-
-      - name: Set up Go
-        uses: actions/setup-go@v6
-        with:
-          go-version-file: go.mod
-          cache: true
-
-      - name: Download build outputs
-        uses: actions/download-artifact@v4
-        with:
-          name: mc-dist-${{ github.run_id }}-${{ github.run_attempt }}
-          path: dist
-
-      - name: Install Linux binary
-        run: |
-          linux_binary="$(jq -r '
-            .[]
-            | select(.type == "Binary" and .extra.Format == "binary" and .goos == "linux" and .goarch == "amd64")
-            | .path
-          ' dist/artifacts.json | head -n 1)"
-          test -n "$linux_binary"
-          test -f "$linux_binary"
-          install -m 0755 "$linux_binary" mc
-
-      - name: Start MinIO
-        run: |
-          wget https://dl.min.io/server/minio/release/linux-amd64/minio
-          chmod +x minio
-          mkdir -p ~/.minio/certs/
-          cp testdata/localhost.crt ~/.minio/certs/public.crt
-          cp testdata/localhost.key ~/.minio/certs/private.key
-          sudo cp testdata/localhost.crt /usr/local/share/ca-certificates/
-          sudo update-ca-certificates
-          ./minio server /tmp/test-xl/{1...4}/ &
-          sleep 10
-
-      - name: Run integration tests
-        run: |
-          go test -race -v --timeout 20m ./... -run Test_FullSuite
-          ./functional-tests.sh
-
   publish:
     name: Publish GitHub Release assets
     if: startsWith(github.ref, 'refs/tags/RELEASE.')
-    needs: integration
+    needs: goreleaser
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -204,8 +193,9 @@ jobs:
               --jq '.id')"
           fi
 
-          while IFS=$'\t' read -r path name; do
-            [[ -n "$path" && -n "$name" ]]
+          upload_asset() {
+            local file="$1"
+            local name="$2"
 
             existing_id="$(gh api \
               "repos/$repository/releases/$release_id/assets?per_page=100" \
@@ -221,12 +211,33 @@ jobs:
               --method POST \
               -H 'Content-Type: application/octet-stream' \
               "repos/$repository/releases/$release_id/assets?name=$encoded_name" \
-              --input "$path" >/dev/null
+              --input "$file" >/dev/null
+          }
+
+          # Stage binaries without a version part in the filename.
+          # Goreleaser may still emit versioned paths/names, so derive a
+          # stable asset name per platform instead of reusing .name.
+          rm -rf release-assets
+          mkdir -p release-assets
+
+          while IFS=$'\t' read -r path goos goarch; do
+            [[ -n "$path" && -n "$goos" && -n "$goarch" ]]
+
+            name="mc-${goos}-${goarch}"
+            if [[ "$goos" == "windows" ]]; then
+              name="${name}.exe"
+            fi
+
+            cp -- "$path" "release-assets/$name"
           done < <(
             jq -r '
               .[]
-              | select((.type == "Binary" and .extra.Format == "binary") or .type == "Checksum")
-              | [.path, .name]
+              | select(.type == "Binary" and .extra.Format == "binary")
+              | [.path, .goos, .goarch]
               | @tsv
             ' dist/artifacts.json
           )
+
+          for file in release-assets/*; do
+            upload_asset "$file" "$(basename "$file")"
+          done

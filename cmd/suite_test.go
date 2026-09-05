@@ -65,7 +65,9 @@ func Test_FullSuite(t *testing.T) {
 	testsThatDependOnOneAnother(t)
 
 	// Alias tests
-	AddALIASWithError(t)
+	if !skipAliasErrorCheck {
+		AddALIASWithError(t)
+	}
 
 	// Share upload/download
 	ShareURLUploadTest(t)
@@ -97,7 +99,7 @@ func Test_FullSuite(t *testing.T) {
 		CopyObjectWithSSECToNewBucketWithNewKey(t)
 		MirrorTempDirectoryUsingSSEC(t)
 		RemoveObjectWithSSEC(t)
-	} else {
+	} else if !skipSSECOverHTTP {
 		PutObjectErrorWithSSECOverHTTP(t)
 	}
 
@@ -165,7 +167,9 @@ func testsThatDependOnOneAnother(t *testing.T) {
 	// Mirror
 	MirrorTempDirectoryStorageClassReducedRedundancy(t)
 	MirrorTempDirectory(t)
-	MirrorMinio2MinioWithTagsCopy(t)
+	if !skipObjectTagging {
+		MirrorMinio2MinioWithTagsCopy(t)
+	}
 
 	// General object tests
 	FindObjects(t)
@@ -193,6 +197,10 @@ var (
 	buildPath                = "../."
 	metaPrefix               = "X-Amz-Meta-"
 	includeDeprecatedMethods = false
+	skipSSECOverHTTP         = false
+	skipStorageClassCheck    = false
+	skipObjectTagging        = false
+	skipAliasErrorCheck      = false
 
 	serverEndpoint = "127.0.0.1:9000"
 	acessKey       = "minioadmin"
@@ -273,6 +281,18 @@ func initializeTestSuite(t *testing.T) {
 
 	envIncludeDeprecated := os.Getenv("MC_TEST_INCLUDE_DEPRECATED")
 	includeDeprecatedMethods, _ = strconv.ParseBool(envIncludeDeprecated)
+
+	envSkipSSECOverHTTP := os.Getenv("MC_TEST_SKIP_SSEC_HTTP")
+	skipSSECOverHTTP, _ = strconv.ParseBool(envSkipSSECOverHTTP)
+
+	envSkipStorageClassCheck := os.Getenv("MC_TEST_SKIP_STORAGE_CLASS_CHECK")
+	skipStorageClassCheck, _ = strconv.ParseBool(envSkipStorageClassCheck)
+
+	envSkipObjectTagging := os.Getenv("MC_TEST_SKIP_OBJECT_TAGGING")
+	skipObjectTagging, _ = strconv.ParseBool(envSkipObjectTagging)
+
+	envSkipAliasErrorCheck := os.Getenv("MC_TEST_SKIP_ALIAS_ERROR")
+	skipAliasErrorCheck, _ = strconv.ParseBool(envSkipAliasErrorCheck)
 
 	envKmsKey := os.Getenv("MC_TEST_KMS_KEY")
 	if envKmsKey != "" {
@@ -2311,7 +2331,7 @@ func validateFileLSInfo(t *testing.T, file *testFile) {
 	// if file.md5Sum != file.findOutput.Etag {
 	// 	t.Fatalf("File and file.findOutput do not have the same md5Sum - Object (%s) vs File (%s)", file.findOutput.Etag, file.md5Sum)
 	// }
-	if file.storageClass != "" {
+	if file.storageClass != "" && !skipStorageClassCheck {
 		if file.storageClass != file.MinioLS.StorageClass {
 			t.Fatalf(
 				"File and minio object do not have the same storage class - Object (%s) vs File (%s)",
