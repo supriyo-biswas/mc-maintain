@@ -21,7 +21,7 @@ import (
 	"sync"
 
 	"github.com/minio/mc/pkg/probe"
-	"github.com/minio/pkg/v3/quick"
+	"github.com/minio/mc/pkg/quick"
 )
 
 var (
@@ -73,7 +73,7 @@ func loadConfigV10() (*configV10, *probe.Error) {
 	}
 
 	// Initialize a new config loader.
-	qc, e := quick.NewConfig(newConfigV10(), nil)
+	qc, e := quick.NewConfig(newConfigV10())
 	if e != nil {
 		return nil, probe.NewError(e)
 	}
@@ -98,7 +98,7 @@ func saveConfigV10(cfgV10 *configV10) *probe.Error {
 	cfgMutex.Lock()
 	defer cfgMutex.Unlock()
 
-	qs, e := quick.NewConfig(cfgV10, nil)
+	qs, e := quick.NewConfig(cfgV10)
 	if e != nil {
 		return probe.NewError(e)
 	}

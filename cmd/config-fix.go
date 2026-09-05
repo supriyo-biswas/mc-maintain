@@ -26,8 +26,8 @@ import (
 	"strings"
 
 	"github.com/minio/mc/pkg/probe"
+	"github.com/minio/mc/pkg/quick"
 	"github.com/minio/pkg/v3/console"
-	"github.com/minio/pkg/v3/quick"
 )
 
 func fixConfig() {
@@ -83,14 +83,14 @@ func fixConfigV3() {
 	}
 
 	// Check if this is the correct version to fix
-	configAllVersions, e := quick.LoadConfig(mustGetMcConfigPath(), nil, &ConfigAnyVersion{})
+	configAllVersions, e := quick.LoadConfig(mustGetMcConfigPath(), &ConfigAnyVersion{})
 	fatalIf(probe.NewError(e), "Unable to load config.")
 	if configAllVersions.Version() != "3" {
 		return
 	}
 
 	brokenCfgV3 := newBrokenConfigV3()
-	brokenMcCfgV3, e := quick.LoadConfig(mustGetMcConfigPath(), nil, brokenCfgV3)
+	brokenMcCfgV3, e := quick.LoadConfig(mustGetMcConfigPath(), brokenCfgV3)
 	fatalIf(probe.NewError(e), "Unable to load config.")
 
 	cfgV3 := newConfigV3()
@@ -113,7 +113,7 @@ func fixConfigV3() {
 	// We blindly drop ACL and Access fields from the broken config v3.
 
 	if isMutated {
-		mcNewConfigV3, e := quick.NewConfig(cfgV3, nil)
+		mcNewConfigV3, e := quick.NewConfig(cfgV3)
 		fatalIf(probe.NewError(e), "Unable to initialize quick config for config version `3`.")
 
 		e = mcNewConfigV3.Save(mustGetMcConfigPath())
@@ -130,13 +130,13 @@ func fixConfigV6ForHosts() {
 	}
 
 	// Check the current config version
-	configAllVersions, e := quick.LoadConfig(mustGetMcConfigPath(), nil, &ConfigAnyVersion{})
+	configAllVersions, e := quick.LoadConfig(mustGetMcConfigPath(), &ConfigAnyVersion{})
 	fatalIf(probe.NewError(e), "Unable to load config.")
 	if configAllVersions.Version() != "6" {
 		return
 	}
 
-	brokenMcCfgV6, e := quick.LoadConfig(mustGetMcConfigPath(), nil, newConfigV6())
+	brokenMcCfgV6, e := quick.LoadConfig(mustGetMcConfigPath(), newConfigV6())
 	fatalIf(probe.NewError(e), "Unable to load config.")
 
 	newCfgV6 := newConfigV6()
@@ -170,7 +170,7 @@ func fixConfigV6ForHosts() {
 
 	if isMutated {
 		// Save the new config back to the disk.
-		mcCfgV6, e := quick.NewConfig(newCfgV6, nil)
+		mcCfgV6, e := quick.NewConfig(newCfgV6)
 		fatalIf(probe.NewError(e), "Unable to initialize quick config for config version `v6`.")
 
 		e = mcCfgV6.Save(mustGetMcConfigPath())
@@ -184,13 +184,13 @@ func fixConfigV6() {
 		return
 	}
 
-	configAllVersions, e := quick.LoadConfig(mustGetMcConfigPath(), nil, &ConfigAnyVersion{})
+	configAllVersions, e := quick.LoadConfig(mustGetMcConfigPath(), &ConfigAnyVersion{})
 	fatalIf(probe.NewError(e), "Unable to load config.")
 	if configAllVersions.Version() != "6" {
 		return
 	}
 
-	config, e := quick.NewConfig(newConfigV6(), nil)
+	config, e := quick.NewConfig(newConfigV6())
 	fatalIf(probe.NewError(e), "Unable to initialize config.")
 
 	e = config.Load(mustGetMcConfigPath())
@@ -248,7 +248,7 @@ func fixConfigV6() {
 	}
 
 	if isMutated {
-		newConf, e := quick.NewConfig(newConfig, nil)
+		newConf, e := quick.NewConfig(newConfig)
 		fatalIf(probe.NewError(e), "Unable to initialize newly fixed config.")
 
 		e = newConf.Save(mustGetMcConfigPath())

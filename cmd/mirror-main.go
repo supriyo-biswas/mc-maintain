@@ -21,7 +21,6 @@ import (
 	"context"
 	"fmt"
 	"math/rand"
-	"net/http"
 	"path"
 	"path/filepath"
 	"runtime"
@@ -40,9 +39,6 @@ import (
 	"github.com/minio/minio-go/v7/pkg/encrypt"
 	"github.com/minio/minio-go/v7/pkg/notification"
 	"github.com/minio/pkg/v3/console"
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promauto"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 // mirror specific flags.
@@ -128,10 +124,6 @@ var (
 		cli.StringFlag{
 			Name:  "attr",
 			Usage: "add custom metadata for all objects",
-		},
-		cli.StringFlag{
-			Name:  "monitoring-address",
-			Usage: "if specified, a new prometheus endpoint will be created to report mirroring activity. (eg: localhost:8081)",
 		},
 		cli.BoolFlag{
 			Name:  "retry",
@@ -230,33 +222,6 @@ EXAMPLES:
       Site-B: {{.Prompt}} {{.HelpName}} --active-active siteB siteA
 `,
 }
-
-var (
-	mirrorTotalOps = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "mc_mirror_total_s3ops",
-		Help: "The total number of mirror operations",
-	})
-	mirrorTotalUploadedBytes = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "mc_mirror_total_s3uploaded_bytes",
-		Help: "The total number of bytes uploaded",
-	})
-	mirrorFailedOps = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "mc_mirror_failed_s3ops",
-		Help: "The total number of failed mirror operations",
-	})
-	mirrorRestarts = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "mc_mirror_total_restarts",
-		Help: "The number of mirror restarts",
-	})
-	mirrorReplicationDurations = promauto.NewHistogramVec(
-		prometheus.HistogramOpts{
-			Name:    "mc_mirror_replication_duration",
-			Help:    "Histogram of replication time in ms per object sizes",
-			Buckets: prometheus.ExponentialBuckets(1, 20, 5),
-		},
-		[]string{"object_size"},
-	)
-)
 
 const uaMirrorAppName = "mc-mirror"
 
@@ -446,23 +411,6 @@ func (mj *mirrorJob) doMirrorWatch(ctx context.Context, targetPath string, tgtSS
 	return sURLs.WithError(probe.NewError(ObjectAlreadyExists{}))
 }
 
-func convertSizeToTag(size int64) string {
-	switch {
-	case size < 1024:
-		return "LESS_THAN_1_KiB"
-	case size < 1024*1024:
-		return "LESS_THAN_1_MiB"
-	case size < 10*1024*1024:
-		return "LESS_THAN_10_MiB"
-	case size < 100*1024*1024:
-		return "LESS_THAN_100_MiB"
-	case size < 1024*1024*1024:
-		return "LESS_THAN_1_GiB"
-	default:
-		return "GREATER_THAN_1_GiB"
-	}
-}
-
 // doMirror - Mirror an object to multiple destination. URLs status contains a copy of sURLs and error if any.
 func (mj *mirrorJob) doMirror(ctx context.Context, sURLs URLs, event EventInfo) URLs {
 	if sURLs.Error != nil { // Erroneous sURLs passed.
@@ -528,13 +476,7 @@ func (mj *mirrorJob) doMirror(ctx context.Context, sURLs URLs, event EventInfo) 
 	var ret URLs
 
 	if !mj.opts.isRetriable {
-		now := time.Now()
 		ret = uploadSourceToTargetURL(ctx, uploadSourceToTargetURLOpts{urls: sURLs, progress: mj.status, encKeyDB: mj.opts.encKeyDB, preserve: mj.opts.isMetadata, isZip: false})
-		if ret.Error == nil {
-			durationMs := time.Since(now).Milliseconds()
-			mirrorReplicationDurations.With(prometheus.Labels{"object_size": convertSizeToTag(sURLs.SourceContent.Size)}).Observe(float64(durationMs))
-		}
-
 		return ret
 	}
 
@@ -547,13 +489,7 @@ func (mj *mirrorJob) doMirror(ctx context.Context, sURLs URLs, event EventInfo) 
 			})
 		}
 
-		now := time.Now()
 		ret = uploadSourceToTargetURL(ctx, uploadSourceToTargetURLOpts{urls: sURLs, progress: mj.status, encKeyDB: mj.opts.encKeyDB, preserve: mj.opts.isMetadata, isZip: false})
-		if ret.Error == nil {
-			durationMs := time.Since(now).Milliseconds()
-			mirrorReplicationDurations.With(prometheus.Labels{"object_size": convertSizeToTag(sURLs.SourceContent.Size)}).Observe(float64(durationMs))
-		}
-
 		return ret.Error
 	})
 
@@ -582,9 +518,6 @@ func (mj *mirrorJob) monitorMirrorStatus(cancel context.CancelFunc) (errDuringMi
 			// the status channel here.
 			continue
 		}
-
-		// Update prometheus fields
-		mirrorTotalOps.Inc()
 
 		if sURLs.Error != nil {
 			var ignoreErr bool
@@ -621,7 +554,6 @@ func (mj *mirrorJob) monitorMirrorStatus(cancel context.CancelFunc) (errDuringMi
 			}
 
 			if !ignoreErr {
-				mirrorFailedOps.Inc()
 				errDuringMirror = true
 				// Quit mirroring if --skip-errors is not passed
 				if !mj.opts.skipErrors {
@@ -633,9 +565,6 @@ func (mj *mirrorJob) monitorMirrorStatus(cancel context.CancelFunc) (errDuringMi
 			continue
 		}
 
-		if sURLs.SourceContent != nil {
-			mirrorTotalUploadedBytes.Add(float64(sURLs.SourceContent.Size))
-		}
 	}
 
 	return
@@ -1172,15 +1101,6 @@ func mainMirror(cliCtx *cli.Context) error {
 	// check 'mirror' cli arguments.
 	srcURL, tgtURL := checkMirrorSyntax(ctx, cliCtx, encKeyDB)
 
-	if prometheusAddress := cliCtx.String("monitoring-address"); prometheusAddress != "" {
-		http.Handle("/metrics", promhttp.Handler())
-		go func() {
-			if e := http.ListenAndServe(prometheusAddress, nil); e != nil {
-				fatalIf(probe.NewError(e), "Unable to setup monitoring endpoint.")
-			}
-		}()
-	}
-
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	for {
 		select {
@@ -1189,7 +1109,6 @@ func mainMirror(cliCtx *cli.Context) error {
 		default:
 			errorDetected := runMirror(ctx, srcURL, tgtURL, cliCtx, encKeyDB)
 			if cliCtx.Bool("watch") || cliCtx.Bool("multi-master") || cliCtx.Bool("active-active") {
-				mirrorRestarts.Inc()
 				time.Sleep(time.Duration(r.Float64() * float64(2*time.Second)))
 				continue
 			}

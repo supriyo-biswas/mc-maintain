@@ -24,7 +24,7 @@ import (
 	"time"
 
 	"github.com/minio/mc/pkg/probe"
-	"github.com/minio/pkg/v3/quick"
+	"github.com/minio/mc/pkg/quick"
 )
 
 // shareEntryV1 - container for each download/upload entries.
@@ -97,7 +97,7 @@ func (s *shareDBV1) Load(filename string) *probe.Error {
 	}
 
 	// Initialize and load using quick package.
-	qs, e := quick.NewConfig(newShareDBV1(), nil)
+	qs, e := quick.NewConfig(newShareDBV1())
 	if e != nil {
 		return probe.NewError(e).Trace(filename)
 	}
@@ -119,7 +119,7 @@ func (s *shareDBV1) Load(filename string) *probe.Error {
 // Persist share uploads to disk.
 func (s shareDBV1) save(filename string) *probe.Error {
 	// Initialize a new quick file.
-	qs, e := quick.NewConfig(s, nil)
+	qs, e := quick.NewConfig(s)
 	if e != nil {
 		return probe.NewError(e).Trace(filename)
 	}

@@ -23,8 +23,8 @@ import (
 	"strings"
 
 	"github.com/minio/mc/pkg/probe"
+	"github.com/minio/mc/pkg/quick"
 	"github.com/minio/pkg/v3/console"
-	"github.com/minio/pkg/v3/quick"
 )
 
 // migrate config files from the any older version to the latest.
@@ -58,13 +58,13 @@ func migrateConfigV1ToV101() {
 	}
 
 	// Check the config version and quit early if the actual version is out of this function scope
-	anyCfg, e := quick.LoadConfig(mustGetMcConfigPath(), nil, &ConfigAnyVersion{})
+	anyCfg, e := quick.LoadConfig(mustGetMcConfigPath(), &ConfigAnyVersion{})
 	fatalIf(probe.NewError(e), "Unable to load config version `1`.")
 	if anyCfg.Version() != "1.0.0" {
 		return
 	}
 
-	mcCfgV1, e := quick.LoadConfig(mustGetMcConfigPath(), nil, newConfigV1())
+	mcCfgV1, e := quick.LoadConfig(mustGetMcConfigPath(), newConfigV1())
 	fatalIf(probe.NewError(e), "Unable to load config version `1`.")
 
 	// 1.0.1 is compatible to 1.0.0. We are just adding new entries.
@@ -98,7 +98,7 @@ func migrateConfigV1ToV101() {
 	}
 
 	// Save the new config back to the disk.
-	mcCfgV101, e := quick.NewConfig(cfgV101, nil)
+	mcCfgV101, e := quick.NewConfig(cfgV101)
 	fatalIf(probe.NewError(e), "Unable to initialize quick config for config version `1.0.1`.")
 	e = mcCfgV101.Save(mustGetMcConfigPath())
 	fatalIf(probe.NewError(e), "Unable to save config version `1.0.1`.")
@@ -113,13 +113,13 @@ func migrateConfigV101ToV2() {
 	}
 
 	// Check the config version and quit early if the actual version is out of this function scope
-	anyCfg, e := quick.LoadConfig(mustGetMcConfigPath(), nil, &ConfigAnyVersion{})
+	anyCfg, e := quick.LoadConfig(mustGetMcConfigPath(), &ConfigAnyVersion{})
 	fatalIf(probe.NewError(e), "Unable to load config version `1`.")
 	if anyCfg.Version() != "1.0.1" {
 		return
 	}
 
-	mcCfgV101, e := quick.LoadConfig(mustGetMcConfigPath(), nil, newConfigV101())
+	mcCfgV101, e := quick.LoadConfig(mustGetMcConfigPath(), newConfigV101())
 	fatalIf(probe.NewError(e), "Unable to load config version `1.0.1`.")
 
 	// update to newer version
@@ -134,7 +134,7 @@ func migrateConfigV101ToV2() {
 		cfgV2.Hosts[k] = hostConfigV2(hostCfgV101)
 	}
 
-	mcCfgV2, e := quick.NewConfig(cfgV2, nil)
+	mcCfgV2, e := quick.NewConfig(cfgV2)
 	fatalIf(probe.NewError(e), "Unable to initialize quick config for config version `2`.")
 
 	e = mcCfgV2.Save(mustGetMcConfigPath())
@@ -151,13 +151,13 @@ func migrateConfigV2ToV3() {
 	}
 
 	// Check the config version and quit early if the actual version is out of this function scope
-	anyCfg, e := quick.LoadConfig(mustGetMcConfigPath(), nil, &ConfigAnyVersion{})
+	anyCfg, e := quick.LoadConfig(mustGetMcConfigPath(), &ConfigAnyVersion{})
 	fatalIf(probe.NewError(e), "Unable to load config version.")
 	if anyCfg.Version() != "2" {
 		return
 	}
 
-	mcCfgV2, e := quick.LoadConfig(mustGetMcConfigPath(), nil, newConfigV2())
+	mcCfgV2, e := quick.LoadConfig(mustGetMcConfigPath(), newConfigV2())
 	fatalIf(probe.NewError(e), "Unable to load mc config V2.")
 
 	cfgV3 := newConfigV3()
@@ -171,7 +171,7 @@ func migrateConfigV2ToV3() {
 		cfgV3.Hosts[k] = hostConfigV3(hostCfgV2)
 	}
 
-	mcNewCfgV3, e := quick.NewConfig(cfgV3, nil)
+	mcNewCfgV3, e := quick.NewConfig(cfgV3)
 	fatalIf(probe.NewError(e), "Unable to initialize quick config for config version `3`.")
 
 	e = mcNewCfgV3.Save(mustGetMcConfigPath())
@@ -188,13 +188,13 @@ func migrateConfigV3ToV4() {
 	}
 
 	// Check the config version and quit early if the actual version is out of this function scope
-	anyCfg, e := quick.LoadConfig(mustGetMcConfigPath(), nil, &ConfigAnyVersion{})
+	anyCfg, e := quick.LoadConfig(mustGetMcConfigPath(), &ConfigAnyVersion{})
 	fatalIf(probe.NewError(e), "Unable to load config version.")
 	if anyCfg.Version() != "3" {
 		return
 	}
 
-	mcCfgV3, e := quick.LoadConfig(mustGetMcConfigPath(), nil, newConfigV3())
+	mcCfgV3, e := quick.LoadConfig(mustGetMcConfigPath(), newConfigV3())
 	fatalIf(probe.NewError(e), "Unable to load mc config V3.")
 
 	cfgV4 := newConfigV4()
@@ -211,7 +211,7 @@ func migrateConfigV3ToV4() {
 		}
 	}
 
-	mcNewCfgV4, e := quick.NewConfig(cfgV4, nil)
+	mcNewCfgV4, e := quick.NewConfig(cfgV4)
 	fatalIf(probe.NewError(e), "Unable to initialize quick config for config version `4`.")
 
 	e = mcNewCfgV4.Save(mustGetMcConfigPath())
@@ -227,13 +227,13 @@ func migrateConfigV4ToV5() {
 	}
 
 	// Check the config version and quit early if the actual version is out of this function scope
-	anyCfg, e := quick.LoadConfig(mustGetMcConfigPath(), nil, &ConfigAnyVersion{})
+	anyCfg, e := quick.LoadConfig(mustGetMcConfigPath(), &ConfigAnyVersion{})
 	fatalIf(probe.NewError(e), "Unable to load config version.")
 	if anyCfg.Version() != "4" {
 		return
 	}
 
-	mcCfgV4, e := quick.LoadConfig(mustGetMcConfigPath(), nil, newConfigV4())
+	mcCfgV4, e := quick.LoadConfig(mustGetMcConfigPath(), newConfigV4())
 	fatalIf(probe.NewError(e), "Unable to load mc config V4.")
 
 	cfgV5 := newConfigV5()
@@ -246,7 +246,7 @@ func migrateConfigV4ToV5() {
 		}
 	}
 
-	mcNewCfgV5, e := quick.NewConfig(cfgV5, nil)
+	mcNewCfgV5, e := quick.NewConfig(cfgV5)
 	fatalIf(probe.NewError(e), "Unable to initialize quick config for config version `5`.")
 
 	e = mcNewCfgV5.Save(mustGetMcConfigPath())
@@ -263,13 +263,13 @@ func migrateConfigV5ToV6() {
 	}
 
 	// Check the config version and quit early if the actual version is out of this function scope
-	anyCfg, e := quick.LoadConfig(mustGetMcConfigPath(), nil, &ConfigAnyVersion{})
+	anyCfg, e := quick.LoadConfig(mustGetMcConfigPath(), &ConfigAnyVersion{})
 	fatalIf(probe.NewError(e), "Unable to load config version.")
 	if anyCfg.Version() != "5" {
 		return
 	}
 
-	mcCfgV5, e := quick.LoadConfig(mustGetMcConfigPath(), nil, newConfigV5())
+	mcCfgV5, e := quick.LoadConfig(mustGetMcConfigPath(), newConfigV5())
 	fatalIf(probe.NewError(e), "Unable to load mc config V5.")
 
 	cfgV6 := newConfigV6()
@@ -294,7 +294,7 @@ func migrateConfigV5ToV6() {
 		cfgV6.Hosts[host] = hostConfigV6(hostCfgV5)
 	}
 
-	mcNewCfgV6, e := quick.NewConfig(cfgV6, nil)
+	mcNewCfgV6, e := quick.NewConfig(cfgV6)
 	fatalIf(probe.NewError(e), "Unable to initialize quick config for config version `6`.")
 
 	e = mcNewCfgV6.Save(mustGetMcConfigPath())
@@ -311,13 +311,13 @@ func migrateConfigV6ToV7() {
 	}
 
 	// Check the config version and quit early if the actual version is out of this function scope
-	anyCfg, e := quick.LoadConfig(mustGetMcConfigPath(), nil, &ConfigAnyVersion{})
+	anyCfg, e := quick.LoadConfig(mustGetMcConfigPath(), &ConfigAnyVersion{})
 	fatalIf(probe.NewError(e), "Unable to load config version.")
 	if anyCfg.Version() != "6" {
 		return
 	}
 
-	mcCfgV6, e := quick.LoadConfig(mustGetMcConfigPath(), nil, newConfigV6())
+	mcCfgV6, e := quick.LoadConfig(mustGetMcConfigPath(), newConfigV6())
 	fatalIf(probe.NewError(e), "Unable to load mc config V6.")
 
 	cfgV7 := newConfigV7()
@@ -370,7 +370,7 @@ func migrateConfigV6ToV7() {
 			}
 		}
 	}
-	mcNewCfgV7, e := quick.NewConfig(cfgV7, nil)
+	mcNewCfgV7, e := quick.NewConfig(cfgV7)
 	fatalIf(probe.NewError(e), "Unable to initialize quick config for config version `7`.")
 
 	e = mcNewCfgV7.Save(mustGetMcConfigPath())
@@ -387,13 +387,13 @@ func migrateConfigV7ToV8() {
 	}
 
 	// Check the config version and quit early if the actual version is out of this function scope
-	anyCfg, e := quick.LoadConfig(mustGetMcConfigPath(), nil, &ConfigAnyVersion{})
+	anyCfg, e := quick.LoadConfig(mustGetMcConfigPath(), &ConfigAnyVersion{})
 	fatalIf(probe.NewError(e), "Unable to load config version.")
 	if anyCfg.Version() != "7" {
 		return
 	}
 
-	mcCfgV7, e := quick.LoadConfig(mustGetMcConfigPath(), nil, newConfigV7())
+	mcCfgV7, e := quick.LoadConfig(mustGetMcConfigPath(), newConfigV7())
 	fatalIf(probe.NewError(e), "Unable to load mc config V7.")
 
 	cfgV8 := newConfigV8()
@@ -410,7 +410,7 @@ func migrateConfigV7ToV8() {
 		hostCfgV8.API = hostCfgV7.API
 		cfgV8.Hosts[host] = hostCfgV8
 	}
-	mcNewCfgV8, e := quick.NewConfig(cfgV8, nil)
+	mcNewCfgV8, e := quick.NewConfig(cfgV8)
 	fatalIf(probe.NewError(e), "Unable to initialize quick config for config version `8`.")
 
 	e = mcNewCfgV8.Save(mustGetMcConfigPath())
@@ -426,13 +426,13 @@ func migrateConfigV8ToV9() {
 	}
 
 	// Check the config version and quit early if the actual version is out of this function scope
-	anyCfg, e := quick.LoadConfig(mustGetMcConfigPath(), nil, &ConfigAnyVersion{})
+	anyCfg, e := quick.LoadConfig(mustGetMcConfigPath(), &ConfigAnyVersion{})
 	fatalIf(probe.NewError(e), "Unable to load config version.")
 	if anyCfg.Version() != "8" {
 		return
 	}
 
-	mcCfgV8, e := quick.LoadConfig(mustGetMcConfigPath(), nil, newConfigV8())
+	mcCfgV8, e := quick.LoadConfig(mustGetMcConfigPath(), newConfigV8())
 	fatalIf(probe.NewError(e), "Unable to load mc config V8.")
 
 	cfgV9 := newConfigV9()
@@ -451,7 +451,7 @@ func migrateConfigV8ToV9() {
 		cfgV9.Hosts[host] = hostCfgV9
 	}
 
-	mcNewCfgV9, e := quick.NewConfig(cfgV9, nil)
+	mcNewCfgV9, e := quick.NewConfig(cfgV9)
 	fatalIf(probe.NewError(e), "Unable to initialize quick config for config version `9`.")
 
 	e = mcNewCfgV9.Save(mustGetMcConfigPath())
@@ -467,13 +467,13 @@ func migrateConfigV9ToV10() {
 	}
 
 	// Check the config version and quit early if the actual version is out of this function scope
-	anyCfg, e := quick.LoadConfig(mustGetMcConfigPath(), nil, &ConfigAnyVersion{})
+	anyCfg, e := quick.LoadConfig(mustGetMcConfigPath(), &ConfigAnyVersion{})
 	fatalIf(probe.NewError(e), "Unable to load config version.")
 	if anyCfg.Version() != "9" {
 		return
 	}
 
-	mcCfgV9, e := quick.LoadConfig(mustGetMcConfigPath(), nil, newConfigV9())
+	mcCfgV9, e := quick.LoadConfig(mustGetMcConfigPath(), newConfigV9())
 	fatalIf(probe.NewError(e), "Unable to load mc config V8.")
 
 	cfgV10 := newConfigV10()
@@ -496,7 +496,7 @@ func migrateConfigV9ToV10() {
 		cfgV10.Aliases[host] = hostCfgV10
 	}
 
-	mcNewCfgV10, e := quick.NewConfig(cfgV10, nil)
+	mcNewCfgV10, e := quick.NewConfig(cfgV10)
 	fatalIf(probe.NewError(e), "Unable to initialize quick config for config version `10`.")
 
 	e = mcNewCfgV10.Save(mustGetMcConfigPath())
