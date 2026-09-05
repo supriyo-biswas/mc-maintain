@@ -24,7 +24,6 @@ MinIO Client (mc) provides a modern alternative to UNIX commands like ls, cat, c
   mb         make a bucket
   mv         move objects
   mirror     synchronize object(s) to a remote site
-  od         measure single stream upload and download
   pipe       stream STDIN to an object
   put        upload an object to a bucket
   rm         remove object(s)

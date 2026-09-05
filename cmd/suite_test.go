@@ -1848,94 +1848,6 @@ func uploadAllFiles(t *testing.T) {
 	}
 }
 
-func OD(t *testing.T) {
-	LocalBucketPath := CreateBucket(t)
-
-	file := fileMap["65M"]
-	out, err := RunMC(
-		"od",
-		"if="+file.diskFile.Name(),
-		"of="+LocalBucketPath+"/od/"+file.fileNameWithoutPath,
-		"parts=10",
-	)
-
-	fatalIfError(err, t)
-	odMsg, err := parseSingleODMessageJSONOutput(out)
-	fatalIfError(err, t)
-
-	if odMsg.TotalSize != file.diskStat.Size() {
-		t.Fatalf(
-			"Expected (%d) bytes to be uploaded but only uploaded (%d) bytes",
-			odMsg.TotalSize,
-			file.diskStat.Size(),
-		)
-	}
-
-	if odMsg.Parts != 10 {
-		t.Fatalf(
-			"Expected upload parts to be (10) but they were (%d)",
-			odMsg.Parts,
-		)
-	}
-
-	if odMsg.Type != "FStoS3" {
-		t.Fatalf(
-			"Expected type to be (FStoS3) but got (%s)",
-			odMsg.Type,
-		)
-	}
-
-	if odMsg.PartSize != uint64(file.diskStat.Size())/10 {
-		t.Fatalf(
-			"Expected part size to be (%d) but got (%d)",
-			file.diskStat.Size()/10,
-			odMsg.PartSize,
-		)
-	}
-
-	out, err = RunMC(
-		"od",
-		"of="+file.diskFile.Name(),
-		"if="+LocalBucketPath+"/od/"+file.fileNameWithoutPath,
-		"parts=10",
-	)
-
-	fatalIfError(err, t)
-	fmt.Println(out)
-	odMsg, err = parseSingleODMessageJSONOutput(out)
-	fatalIfError(err, t)
-
-	if odMsg.TotalSize != file.diskStat.Size() {
-		t.Fatalf(
-			"Expected (%d) bytes to be uploaded but only uploaded (%d) bytes",
-			odMsg.TotalSize,
-			file.diskStat.Size(),
-		)
-	}
-
-	if odMsg.Parts != 10 {
-		t.Fatalf(
-			"Expected upload parts to be (10) but they were (%d)",
-			odMsg.Parts,
-		)
-	}
-
-	if odMsg.Type != "S3toFS" {
-		t.Fatalf(
-			"Expected type to be (FStoS3) but got (%s)",
-			odMsg.Type,
-		)
-	}
-
-	if odMsg.PartSize != uint64(file.diskStat.Size())/10 {
-		t.Fatalf(
-			"Expected part size to be (%d) but got (%d)",
-			file.diskStat.Size()/10,
-			odMsg.PartSize,
-		)
-	}
-}
-
 func MvFromDiskToMinio(t *testing.T) {
 	LocalBucketPath := CreateBucket(t)
 
@@ -2686,15 +2598,6 @@ func parseSingleErrorMessageJSONOutput(out string) (errMSG errorMessageWrapper, 
 	fmt.Println("ERROR ------------------------------")
 	fmt.Println(errMSG)
 	fmt.Println(" ------------------------------")
-	return
-}
-
-func parseSingleODMessageJSONOutput(out string) (odMSG odMessage, err error) {
-	err = json.Unmarshal([]byte(out), &odMSG)
-	if err != nil {
-		return
-	}
-
 	return
 }
 

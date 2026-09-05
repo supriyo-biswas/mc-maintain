@@ -548,14 +548,6 @@ func (f *fsClient) putN(_ context.Context, reader io.Reader, size int64, progres
 	return totalWritten, nil
 }
 
-// PutPart - create a new file with metadata, reading up to N bytes.
-func (f *fsClient) PutPart(ctx context.Context, reader io.Reader, size int64, progress io.Reader, opts PutOptions) (int64, *probe.Error) {
-	if size < 0 {
-		return f.put(ctx, reader, size, progress, opts)
-	}
-	return f.putN(ctx, reader, size, progress, opts)
-}
-
 // ShareDownload - share download not implemented for filesystem.
 func (f *fsClient) ShareDownload(_ context.Context, _ string, _ time.Duration) (string, *probe.Error) {
 	return "", probe.NewError(APINotImplemented{
@@ -1497,14 +1489,6 @@ func (f *fsClient) GetBucketInfo(_ context.Context) (BucketInfo, *probe.Error) {
 func (f *fsClient) Restore(_ context.Context, _ string, _ int) *probe.Error {
 	return probe.NewError(APINotImplemented{
 		API:     "Restore",
-		APIType: "filesystem",
-	})
-}
-
-// OD Get - not implemented
-func (f *fsClient) GetPart(_ context.Context, _ int) (io.ReadCloser, *probe.Error) {
-	return nil, probe.NewError(APINotImplemented{
-		API:     "GetPart",
 		APIType: "filesystem",
 	})
 }

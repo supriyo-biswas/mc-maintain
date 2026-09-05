@@ -409,7 +409,6 @@ var appCmds = []cli.Command{
 	mbCmd,
 	mvCmd,
 	mirrorCmd,
-	odCmd,
 	policyCmd,
 	pipeCmd,
 	putCmd,
