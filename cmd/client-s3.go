@@ -28,7 +28,6 @@ import (
 	"io"
 	"maps"
 	"net"
-	"net/http"
 	"net/url"
 	"os"
 	"path"
@@ -177,32 +176,6 @@ func isHostTLS(config *Config) bool {
 		useTLS = false
 	}
 	return useTLS
-}
-
-type notifyExpiringTLS struct {
-	transport http.RoundTripper
-}
-
-var globalExpiringCerts sync.Map
-
-func (n notifyExpiringTLS) RoundTrip(req *http.Request) (res *http.Response, err error) {
-	if n.transport == nil {
-		return nil, errors.New("invalid transport")
-	}
-
-	res, err = n.transport.RoundTrip(req)
-	if err != nil || res.TLS == nil || len(res.TLS.PeerCertificates) == 0 {
-		return res, err
-	}
-
-	cert := res.TLS.PeerCertificates[0] // leaf certificate
-	validityDur := cert.NotAfter.Sub(cert.NotBefore)
-	// Warn if less than 10% of time left and it is less than 28 days.
-	if time.Until(cert.NotAfter) < time.Duration(min(0.1*float64(validityDur), 28*24*float64(time.Hour))) {
-		globalExpiringCerts.Store(req.Host, cert.NotAfter)
-	}
-
-	return res, err
 }
 
 // useTrailingHeaders will enable trailing headers on S3 clients.

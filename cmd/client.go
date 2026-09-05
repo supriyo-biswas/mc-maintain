@@ -393,10 +393,6 @@ func (config *Config) initTransport(withS3v2 bool) {
 		} else if strings.EqualFold(config.Signature, "S3v2") && withS3v2 {
 			transport = httptracer.GetNewTraceTransport(newTraceV2(), transport)
 		}
-	} else {
-		if !globalJSONLine && !globalJSON {
-			transport = notifyExpiringTLS{transport: transport}
-		}
 	}
 
 	transport = gzhttp.Transport(transport)
