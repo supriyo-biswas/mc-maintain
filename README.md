@@ -37,7 +37,7 @@ It provides the following commands:
   watch      listen for object notification events
 ```
 
-It is based on the last open-source version of the [Minio client](https://github.com/minio/mc), but is actively maintained and tested with S3 compatible open-source services (e.g. [RustFS](https://github.com/rustfs/rustfs), [Garage](https://garagehq.deuxfleurs.fr) and [SeaweedFS](https://github.com/seaweedfs/seaweedfs)) unlike the original project, which has been unmaintained since 2025.
+It is based on the last open-source version of the [Minio client](https://github.com/minio/mc), but some commands are unavailable, see [compatibility](#compatibility).
 
 ## Installation
 
@@ -157,7 +157,13 @@ cat      cp       event    head     mb       pipe     rm       share    stat    
 
 ## Compatibility
 
-`mc` aims to be compatible with Amazon S3 and S3-compatible services that offer a reasonable degree of S3 compatibility.
+`mc` aims to be compatible with Amazon S3 and S3-compatible services. Every commit is tested in CI against the following self-hosted S3-compatible services:
+
+* [RustFS](https://github.com/rustfs/rustfs)
+* [Garage](https://garagehq.deuxfleurs.fr)
+* [SeaweedFS](https://github.com/seaweedfs/seaweedfs)
+* [VersityGW](https://github.com/versity/versitygw)
+* [MinIO Aistor](https://www.min.io/product/aistor)
 
 If you've faced compatibility issues with S3 compatible services please [open an issue](https://github.com/supriyo-biswas/mc-maintain/issues).
 

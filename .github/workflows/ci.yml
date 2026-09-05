@@ -159,7 +159,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        backend: [minio, rustfs, garage, seaweedfs]
+        backend: [minio-legacy, rustfs, garage, seaweedfs, versitygw, aistor]
     steps:
       - name: Check out code
         uses: actions/checkout@v5
@@ -182,6 +182,8 @@ jobs:
         run: install -m 0755 .integration/mc-linux-amd64 mc
 
       - name: Run integration tests
+        env:
+          AISTOR_LICENSE: ${{ secrets.AISTOR_LICENSE }}
         run: .github/scripts/run-integration-tests.sh "${{ matrix.backend }}" "$GITHUB_WORKSPACE/mc"
 
   goreleaser:

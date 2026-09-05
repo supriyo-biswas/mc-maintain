@@ -47,7 +47,7 @@ test: verifiers build
 	@echo "Running functional tests"
 	@GO111MODULE=on MC_TEST_RUN_FULL_SUITE=true go test -race -v --timeout 20m ./... -run Test_FullSuite
 
-INTEGRATION_BACKENDS ?= minio rustfs garage seaweedfs
+INTEGRATION_BACKENDS ?= minio-legacy rustfs garage seaweedfs versitygw aistor
 MC_INTEGRATION_PORT ?= 9000
 
 # Runs the full integration suite against each supported local object store.

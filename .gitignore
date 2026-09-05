@@ -9,6 +9,7 @@ parts/
 prime/
 stage/
 mc
+data/
 .run*
 .idea/
 mc.RELEASE*
