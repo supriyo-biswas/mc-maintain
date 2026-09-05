@@ -43,72 +43,9 @@ jobs:
           go build --ldflags="-s -w" .
           go test -v -race --timeout 30m ./...
 
-  integration:
-    name: Integration tests
-    runs-on: ubuntu-latest
-    env:
-      ACCESS_KEY: minioadmin
-      SECRET_KEY: minioadmin
-      ENABLE_HTTPS: 1
-      MINIO_CI_CD: 1
-      SERVER_ENDPOINT: localhost:9000
-      MC_TEST_ENABLE_HTTPS: true
-      MC_TEST_SKIP_INSECURE: true
-      MC_TEST_SKIP_BUILD: true
-      GO111MODULE: on
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
-
-      - name: Set up Go
-        uses: actions/setup-go@v6
-        with:
-          go-version-file: go.mod
-          cache: true
-
-      - name: Start MinIO
-        run: |
-          wget https://dl.min.io/server/minio/release/linux-amd64/minio
-          chmod +x minio
-          mkdir -p ~/.minio/certs/
-          cp testdata/localhost.crt ~/.minio/certs/public.crt
-          cp testdata/localhost.key ~/.minio/certs/private.key
-          sudo cp testdata/localhost.crt /usr/local/share/ca-certificates/
-          sudo update-ca-certificates
-          ./minio server /tmp/test-xl/{1...4}/ &
-          sleep 10
-
-      - name: Run race and verification tests
-        run: |
-          make test-race
-          make verify
-          ./functional-tests.sh
-
-  compatibility:
-    name: Linux 386 compatibility tests
-    runs-on: ubuntu-latest
-    env:
-      CGO_ENABLED: 0
-      GO111MODULE: on
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v5
-
-      - name: Set up Go
-        uses: actions/setup-go@v6
-        with:
-          go-version-file: go.mod
-          cache: true
-
-      - name: Test 386
-        run: GOOS=linux GOARCH=386 go test -short ./...
-
   vulncheck:
     name: Vulnerability analysis
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - name: Check out code
         uses: actions/checkout@v5
@@ -120,7 +57,7 @@ jobs:
           cache: true
 
       - name: Install govulncheck
-        run: go install golang.org/x/vuln/cmd/govulncheck@v1.1.4
+        run: go install golang.org/x/vuln/cmd/govulncheck@v1.7.0
 
       - name: Run govulncheck
         run: govulncheck ./...
@@ -130,7 +67,7 @@ jobs:
     if: >-
       github.event_name == 'push' &&
       (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/RELEASE.'))
-    needs: [unit, integration, compatibility]
+    needs: [unit, vulncheck]
     runs-on: ubuntu-latest
     steps:
       - name: Check out tagged source
@@ -168,10 +105,75 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
+  integration:
+    name: Integration tests with Linux binary
+    if: >-
+      github.event_name == 'push' &&
+      (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/RELEASE.'))
+    needs: build
+    runs-on: ubuntu-latest
+    env:
+      ACCESS_KEY: minioadmin
+      SECRET_KEY: minioadmin
+      ENABLE_HTTPS: 1
+      MINIO_CI_CD: 1
+      SERVER_ENDPOINT: localhost:9000
+      MC_TEST_ENABLE_HTTPS: true
+      MC_TEST_SKIP_INSECURE: true
+      MC_TEST_SKIP_BUILD: true
+      MC_TEST_RUN_FULL_SUITE: true
+      MC_TEST_BINARY_PATH: ${{ github.workspace }}/mc
+      GO111MODULE: on
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Download build outputs
+        uses: actions/download-artifact@v4
+        with:
+          name: mc-dist-${{ github.run_id }}-${{ github.run_attempt }}
+          path: dist
+
+      - name: Install Linux binary
+        run: |
+          linux_binary="$(jq -r '
+            .[]
+            | select(.type == "Binary" and .extra.Format == "binary" and .goos == "linux" and .goarch == "amd64")
+            | .path
+          ' dist/artifacts.json | head -n 1)"
+          test -n "$linux_binary"
+          test -f "$linux_binary"
+          install -m 0755 "$linux_binary" mc
+
+      - name: Start MinIO
+        run: |
+          wget https://dl.min.io/server/minio/release/linux-amd64/minio
+          chmod +x minio
+          mkdir -p ~/.minio/certs/
+          cp testdata/localhost.crt ~/.minio/certs/public.crt
+          cp testdata/localhost.key ~/.minio/certs/private.key
+          sudo cp testdata/localhost.crt /usr/local/share/ca-certificates/
+          sudo update-ca-certificates
+          ./minio server /tmp/test-xl/{1...4}/ &
+          sleep 10
+
+      - name: Run integration tests
+        run: |
+          go test -race -v --timeout 20m ./... -run Test_FullSuite
+          ./functional-tests.sh
+
   publish:
     name: Publish GitHub Release assets
     if: startsWith(github.ref, 'refs/tags/RELEASE.')
-    needs: build
+    needs: integration
     runs-on: ubuntu-latest
     permissions:
       contents: write

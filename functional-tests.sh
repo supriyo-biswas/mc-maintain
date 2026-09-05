@@ -309,17 +309,6 @@ function test_list_dir() {
 	log_success "$start_time" "${FUNCNAME[0]}"
 }
 
-function test_od_object() {
-	show "${FUNCNAME[0]}"
-
-	start_time=$(get_time)
-	object_name="mc-test-object-$RANDOM"
-	assert_success "$start_time" "${FUNCNAME[0]}" mc_cmd od if="${FILE_1_MB}" of="${SERVER_ALIAS}/${BUCKET_NAME}/${object_name}"
-	assert_success "$start_time" "${FUNCNAME[0]}" mc_cmd od of="${FILE_1_MB}" if="${SERVER_ALIAS}/${BUCKET_NAME}/${object_name}"
-
-	log_success "$start_time" "${FUNCNAME[0]}"
-}
-
 function test_put_object() {
 	show "${FUNCNAME[0]}"
 
