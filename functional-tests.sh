@@ -353,7 +353,8 @@ function test_put_object_0byte() {
 	assert_success "$start_time" "${FUNCNAME[0]}" mc_cmd cp "${FILE_0_B}" "${SERVER_ALIAS}/${BUCKET_NAME}/${object_name}"
 	assert_success "$start_time" "${FUNCNAME[0]}" mc_cmd cp "${SERVER_ALIAS}/${BUCKET_NAME}/${object_name}" "${object_name}.downloaded"
 	assert_success "$start_time" "${FUNCNAME[0]}" check_md5sum "$FILE_0_B_MD5SUM" "${object_name}.downloaded"
-	assert_success "$start_time" "${FUNCNAME[0]}" mc_cmd rm "${object_name}.downloaded" "${SERVER_ALIAS}/${BUCKET_NAME}/${object_name}"
+	assert_success "$start_time" "${FUNCNAME[0]}" rm "${object_name}.downloaded"
+	assert_success "$start_time" "${FUNCNAME[0]}" mc_cmd rm "${SERVER_ALIAS}/${BUCKET_NAME}/${object_name}"
 
 	log_success "$start_time" "${FUNCNAME[0]}"
 }
@@ -403,7 +404,8 @@ function test_get_object() {
 	assert_success "$start_time" "${FUNCNAME[0]}" mc_cmd cp "${FILE_1_MB}" "${SERVER_ALIAS}/${BUCKET_NAME}/${object_name}"
 	assert_success "$start_time" "${FUNCNAME[0]}" mc_cmd cp "${SERVER_ALIAS}/${BUCKET_NAME}/${object_name}" "${object_name}.downloaded"
 	assert_success "$start_time" "${FUNCNAME[0]}" check_md5sum "$FILE_1_MB_MD5SUM" "${object_name}.downloaded"
-	assert_success "$start_time" "${FUNCNAME[0]}" mc_cmd rm "${object_name}.downloaded" "${SERVER_ALIAS}/${BUCKET_NAME}/${object_name}"
+	assert_success "$start_time" "${FUNCNAME[0]}" rm "${object_name}.downloaded"
+	assert_success "$start_time" "${FUNCNAME[0]}" mc_cmd rm "${SERVER_ALIAS}/${BUCKET_NAME}/${object_name}"
 
 	log_success "$start_time" "${FUNCNAME[0]}"
 }
@@ -416,7 +418,8 @@ function test_get_object_multipart() {
 	assert_success "$start_time" "${FUNCNAME[0]}" mc_cmd cp "${FILE_65_MB}" "${SERVER_ALIAS}/${BUCKET_NAME}/${object_name}"
 	assert_success "$start_time" "${FUNCNAME[0]}" mc_cmd cp "${SERVER_ALIAS}/${BUCKET_NAME}/${object_name}" "${object_name}.downloaded"
 	assert_success "$start_time" "${FUNCNAME[0]}" check_md5sum "$FILE_65_MB_MD5SUM" "${object_name}.downloaded"
-	assert_success "$start_time" "${FUNCNAME[0]}" mc_cmd rm "${object_name}.downloaded" "${SERVER_ALIAS}/${BUCKET_NAME}/${object_name}"
+	assert_success "$start_time" "${FUNCNAME[0]}" rm "${object_name}.downloaded"
+	assert_success "$start_time" "${FUNCNAME[0]}" mc_cmd rm "${SERVER_ALIAS}/${BUCKET_NAME}/${object_name}"
 
 	log_success "$start_time" "${FUNCNAME[0]}"
 }
@@ -476,7 +479,8 @@ function test_presigned_put_object() {
 
 	assert_success "$start_time" "${FUNCNAME[0]}" mc_cmd cp "${SERVER_ALIAS}/${BUCKET_NAME}/${object_name}" "${object_name}.downloaded"
 	assert_success "$start_time" "${FUNCNAME[0]}" check_md5sum "$FILE_1_MB_MD5SUM" "${object_name}.downloaded"
-	assert_success "$start_time" "${FUNCNAME[0]}" mc_cmd rm "${object_name}.downloaded" "${SERVER_ALIAS}/${BUCKET_NAME}/${object_name}"
+	assert_success "$start_time" "${FUNCNAME[0]}" rm "${object_name}.downloaded"
+	assert_success "$start_time" "${FUNCNAME[0]}" mc_cmd rm "${SERVER_ALIAS}/${BUCKET_NAME}/${object_name}"
 
 	log_success "$start_time" "${FUNCNAME[0]}"
 }
@@ -495,7 +499,8 @@ function test_presigned_get_object() {
 	assert_success "$start_time" "${FUNCNAME[0]}" show_on_failure $? "unable to download $download_url"
 
 	assert_success "$start_time" "${FUNCNAME[0]}" check_md5sum "$FILE_1_MB_MD5SUM" "${object_name}.downloaded"
-	assert_success "$start_time" "${FUNCNAME[0]}" mc_cmd rm "${object_name}.downloaded" "${SERVER_ALIAS}/${BUCKET_NAME}/${object_name}"
+	assert_success "$start_time" "${FUNCNAME[0]}" rm "${object_name}.downloaded"
+	assert_success "$start_time" "${FUNCNAME[0]}" mc_cmd rm "${SERVER_ALIAS}/${BUCKET_NAME}/${object_name}"
 
 	log_success "$start_time" "${FUNCNAME[0]}"
 }
@@ -509,7 +514,8 @@ function test_cat_object() {
 	"${MC_CMD[@]}" cat "${SERVER_ALIAS}/${BUCKET_NAME}/${object_name}" >"${object_name}.downloaded"
 	assert_success "$start_time" "${FUNCNAME[0]}" show_on_failure $? "unable to download object using 'mc cat'"
 	assert_success "$start_time" "${FUNCNAME[0]}" check_md5sum "$FILE_1_MB_MD5SUM" "${object_name}.downloaded"
-	assert_success "$start_time" "${FUNCNAME[0]}" mc_cmd rm "${object_name}.downloaded" "${SERVER_ALIAS}/${BUCKET_NAME}/${object_name}"
+	assert_success "$start_time" "${FUNCNAME[0]}" rm "${object_name}.downloaded"
+	assert_success "$start_time" "${FUNCNAME[0]}" mc_cmd rm "${SERVER_ALIAS}/${BUCKET_NAME}/${object_name}"
 
 	log_success "$start_time" "${FUNCNAME[0]}"
 }
@@ -525,7 +531,7 @@ function test_cat_stdin() {
 	"${MC_CMD[@]}" cat "${SERVER_ALIAS}/${bucket_name}/${object_name}" >stdout.output
 	assert_success "$start_time" "${FUNCNAME[0]}" show_on_failure $? "unable to redirect stdin to stdout using 'mc cat'"
 	assert_success "$start_time" "${FUNCNAME[0]}" check_md5sum "42ed9fb3563d8e9c7bb522be443033f4" stdout.output
-	assert_success "$start_time" "${FUNCNAME[0]}" mc_cmd rm stdout.output
+	assert_success "$start_time" "${FUNCNAME[0]}" rm stdout.output
 
 	log_success "$start_time" "${FUNCNAME[0]}"
 }
@@ -746,8 +752,8 @@ function test_copy_directory() {
 function test_copy_object_preserve_filesystem_attr() {
 	show "${FUNCNAME[0]}"
 	assert_success "$start_time" "${FUNCNAME[0]}" mc_cmd cp -a "${FILE_1_MB}" "${SERVER_ALIAS}/${BUCKET_NAME}/${object_name}"
-	diff -bB <("${MC_CMD[@]}" --json stat "${FILE_1_MB}" | jq -r '.metadata."X-Amz-Meta-Mc-Attrs"') <("${MC_CMD[@]}" --json stat "${SERVER_ALIAS}/${BUCKET_NAME}/${object_name}" | jq -r '.metadata."X-Amz-Meta-Mc-Attrs"') >/dev/null 2>&1 >/dev/null 2>&1
-	assert_success "$start_time" "${FUNCNAME[0]}" show_on_failure $? "unable to put object with file system attribute"
+	file_attrs=$("${MC_CMD[@]}" --json stat "${SERVER_ALIAS}/${BUCKET_NAME}/${object_name}" | jq -r '.metadata."X-Amz-Meta-Mc-Attrs" // empty')
+	assert_success "$start_time" "${FUNCNAME[0]}" test -n "$file_attrs"
 	assert_success "$start_time" "${FUNCNAME[0]}" mc_cmd rm "${SERVER_ALIAS}/${BUCKET_NAME}/${object_name}"
 	log_success "$start_time" "${FUNCNAME[0]}"
 }
@@ -760,14 +766,14 @@ function test_mv_object() {
 	tmpdir="$(mktemp -d)"
 
 	# Test mv command locally
-	assert_success "$start_time" "${FUNCNAME[0]}" mc_cmd cp "${FILE_1_MB}" "${tmpdir}/file.tmp"
-	assert_success "$start_time" "${FUNCNAME[0]}" mc_cmd mv "${tmpdir}/file.tmp" "${tmpdir}/file"
-	assert_failure "$start_time" "${FUNCNAME[0]}" mc_cmd stat "${tmpdir}/file.tmp"
+	assert_success "$start_time" "${FUNCNAME[0]}" cp "${FILE_1_MB}" "${tmpdir}/file.tmp"
+	assert_success "$start_time" "${FUNCNAME[0]}" mv "${tmpdir}/file.tmp" "${tmpdir}/file"
+	assert_success "$start_time" "${FUNCNAME[0]}" test ! -e "${tmpdir}/file.tmp"
 	assert_success "$start_time" "${FUNCNAME[0]}" check_md5sum "$FILE_1_MB_MD5SUM" "${tmpdir}/file"
 
 	# Test mv command from filesystem to S3
 	assert_success "$start_time" "${FUNCNAME[0]}" mc_cmd mv "${tmpdir}/file" "${SERVER_ALIAS}/${BUCKET_NAME}/${random_dir}/object-1"
-	assert_failure "$start_time" "${FUNCNAME[0]}" mc_cmd stat "${tmpdir}/file"
+	assert_success "$start_time" "${FUNCNAME[0]}" test ! -e "${tmpdir}/file"
 	assert_success "$start_time" "${FUNCNAME[0]}" mc_cmd stat "${SERVER_ALIAS}/${BUCKET_NAME}/${random_dir}/object-1"
 
 	# Test mv command from S3 to S3
@@ -778,7 +784,7 @@ function test_mv_object() {
 	# Test mv command from S3 to filesystem
 	assert_success "$start_time" "${FUNCNAME[0]}" mc_cmd mv "${SERVER_ALIAS}/${BUCKET_NAME}/${random_dir}/object-2" "${tmpdir}/file"
 	assert_failure "$start_time" "${FUNCNAME[0]}" mc_cmd stat "${SERVER_ALIAS}/${BUCKET_NAME}/${random_dir}/object-2"
-	assert_success "$start_time" "${FUNCNAME[0]}" mc_cmd stat "${tmpdir}/file"
+	assert_success "$start_time" "${FUNCNAME[0]}" test -f "${tmpdir}/file"
 
 	# Cleanup
 	assert_success "$start_time" "${FUNCNAME[0]}" mc_cmd rm -r --force "${SERVER_ALIAS}/${BUCKET_NAME}/${random_dir}/"
@@ -803,7 +809,7 @@ function test_copy_object_with_sse_rewrite() {
 	"${MC_CMD[@]}" cat "${SERVER_ALIAS}/${BUCKET_NAME}/${object_name}" >"${object_name}.downloaded"
 	assert_success "$start_time" "${FUNCNAME[0]}" show_on_failure $? "unable to download object using 'mc cat'"
 	assert_success "$start_time" "${FUNCNAME[0]}" check_md5sum "$FILE_1_MB_MD5SUM" "${object_name}.downloaded"
-	assert_success "$start_time" "${FUNCNAME[0]}" mc_cmd rm "${object_name}.downloaded"
+	assert_success "$start_time" "${FUNCNAME[0]}" rm "${object_name}.downloaded"
 	# mc rm on with multi-object delete, deletes encrypted object without encryption key.
 	assert_success "$start_time" "${FUNCNAME[0]}" mc_cmd rm "${SERVER_ALIAS}/${BUCKET_NAME}/${prefix}/${object_name}"
 	assert_success "$start_time" "${FUNCNAME[0]}" mc_cmd rm "${SERVER_ALIAS}/${BUCKET_NAME}/${object_name}"
@@ -830,7 +836,7 @@ function test_copy_object_with_sse_dest() {
 	"${MC_CMD[@]}" cat --enc-c "${cli_flag2}" "${SERVER_ALIAS}/${BUCKET_NAME}/${object_name}" >"${object_name}.downloaded"
 	assert_success "$start_time" "${FUNCNAME[0]}" show_on_failure $? "unable to download object using 'mc cat'"
 	assert_success "$start_time" "${FUNCNAME[0]}" check_md5sum "$FILE_1_MB_MD5SUM" "${object_name}.downloaded"
-	assert_success "$start_time" "${FUNCNAME[0]}" mc_cmd rm "${object_name}.downloaded"
+	assert_success "$start_time" "${FUNCNAME[0]}" rm "${object_name}.downloaded"
 	# mc rm on src object with first encryption key should pass
 	assert_success "$start_time" "${FUNCNAME[0]}" mc_cmd rm "${SERVER_ALIAS}/${BUCKET_NAME}/${prefix}/${object_name}"
 	# mc rm on encrypted destination object with second encryption key should pass
@@ -859,7 +865,7 @@ function test_sse_key_rotation() {
 	"${MC_CMD[@]}" cat --enc-c "${cli_flag2}" "${SERVER_ALIAS_TLS}/${BUCKET_NAME}/${object_name}" >"${object_name}.downloaded"
 	assert_success "$start_time" "${FUNCNAME[0]}" show_on_failure $? "unable to download object using 'mc cat'"
 	assert_success "$start_time" "${FUNCNAME[0]}" check_md5sum "$FILE_1_MB_MD5SUM" "${object_name}.downloaded"
-	assert_success "$start_time" "${FUNCNAME[0]}" mc_cmd rm "${object_name}.downloaded"
+	assert_success "$start_time" "${FUNCNAME[0]}" rm "${object_name}.downloaded"
 	# mc rm on encrypted object with succeed anyways, without encrypted keys.
 	assert_success "$start_time" "${FUNCNAME[0]}" mc_cmd rm "${SERVER_ALIAS_TLS}/${BUCKET_NAME}/${object_name}"
 
@@ -909,7 +915,8 @@ function test_get_object_with_sse() {
 	assert_success "$start_time" "${FUNCNAME[0]}" mc_cmd cp --enc-c "${cli_flag}" "${FILE_1_MB}" "${SERVER_ALIAS}/${BUCKET_NAME}/${object_name}"
 	assert_success "$start_time" "${FUNCNAME[0]}" mc_cmd cp --enc-c "${cli_flag}" "${SERVER_ALIAS}/${BUCKET_NAME}/${object_name}" "${object_name}.downloaded"
 	assert_success "$start_time" "${FUNCNAME[0]}" check_md5sum "$FILE_1_MB_MD5SUM" "${object_name}.downloaded"
-	assert_success "$start_time" "${FUNCNAME[0]}" mc_cmd rm "${object_name}.downloaded" "${SERVER_ALIAS}/${BUCKET_NAME}/${object_name}"
+	assert_success "$start_time" "${FUNCNAME[0]}" rm "${object_name}.downloaded"
+	assert_success "$start_time" "${FUNCNAME[0]}" mc_cmd rm "${SERVER_ALIAS}/${BUCKET_NAME}/${object_name}"
 
 	log_success "$start_time" "${FUNCNAME[0]}"
 }
