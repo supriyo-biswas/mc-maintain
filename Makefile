@@ -12,10 +12,6 @@ GOLANGCI = $(GOPATH)/bin/golangci-lint
 
 all: build
 
-checks:
-	@echo "Checking dependencies"
-	@(env bash $(PWD)/buildscripts/checkdeps.sh)
-
 getdeps:
 	@mkdir -p ${GOPATH}/bin
 	@echo "Installing tools" && go install tool
@@ -81,7 +77,7 @@ verify:
 	@GO111MODULE=on MC_TEST_RUN_FULL_SUITE=true go test -race -v --timeout 20m ./... -run Test_FullSuite
 
 # Builds mc locally.
-build: checks
+build:
 	@echo "Building mc binary to './mc'"
 	@GO111MODULE=on GOOS=$(TARGET_GOOS) GOARCH=$(TARGET_GOARCH) CGO_ENABLED=0 go build -trimpath -tags kqueue --ldflags "$(LDFLAGS)" -o $(PWD)/mc
 

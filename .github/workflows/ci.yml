@@ -16,8 +16,71 @@ concurrency:
   cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/RELEASE.') }}
 
 jobs:
+  detect-go-changes:
+    name: Detect Go code changes
+    runs-on: ubuntu-latest
+    outputs:
+      go_changed: ${{ steps.filter.outputs.go_changed }}
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Detect Go changes
+        id: filter
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          REF: ${{ github.ref }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          BEFORE_SHA: ${{ github.event.before }}
+          HEAD_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+
+          # Master and RELEASE tags always run the full pipeline.
+          if [[ "$REF" == "refs/heads/master" || "$REF" == refs/tags/RELEASE.* ]]; then
+            echo "master or RELEASE tag: always run"
+            echo "go_changed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          files=""
+          if [[ "$EVENT_NAME" == "pull_request" && -n "$BASE_SHA" ]]; then
+            if ! git cat-file -e "$BASE_SHA" 2>/dev/null; then
+              git fetch origin "$BASE_SHA" --depth=1 || true
+            fi
+            files="$(git diff --name-only "$BASE_SHA"...HEAD -- || true)"
+          elif [[ "$EVENT_NAME" == "push" && -n "${BEFORE_SHA:-}" ]]; then
+            if [[ "$BEFORE_SHA" =~ ^0+$ ]]; then
+              # New branch with no history to diff: run to be safe.
+              echo "no base to diff (new branch): always run"
+              echo "go_changed=true" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            files="$(git diff --name-only "$BEFORE_SHA" "$HEAD_SHA" -- || true)"
+          else
+            # Unknown trigger: run to be safe.
+            echo "unknown trigger: always run"
+            echo "go_changed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "Changed files:"
+          echo "$files"
+
+          if printf '%s\n' "$files" | grep -Eq '(^|/)[^ ]*\.(go|sh|yml|yaml)$|(^|/)go\.(mod|sum)$'; then
+            echo "Go/build changes detected"
+            echo "go_changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "No Go/build changes"
+            echo "go_changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
   unit:
     name: Unit tests on Go ${{ matrix.go-version }} and ${{ matrix.os }}
+    needs: [detect-go-changes]
+    if: needs.detect-go-changes.outputs.go_changed == 'true'
     runs-on: ${{ matrix.os }}
     env:
       GO111MODULE: on
@@ -43,6 +106,8 @@ jobs:
 
   vulncheck:
     name: Vulnerability analysis
+    needs: [detect-go-changes]
+    if: needs.detect-go-changes.outputs.go_changed == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
@@ -62,6 +127,8 @@ jobs:
 
   build-linux-amd64-for-integration:
     name: Build Linux AMD64 integration binary
+    needs: [detect-go-changes]
+    if: needs.detect-go-changes.outputs.go_changed == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
@@ -86,7 +153,8 @@ jobs:
 
   integration:
     name: Integration tests with ${{ matrix.backend }}
-    needs: [unit, vulncheck, build-linux-amd64-for-integration]
+    needs: [detect-go-changes, unit, vulncheck, build-linux-amd64-for-integration]
+    if: needs.detect-go-changes.outputs.go_changed == 'true'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
