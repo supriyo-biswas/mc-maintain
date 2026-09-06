@@ -345,6 +345,74 @@ function test_put_object_multipart() {
 	log_success "$start_time" "${FUNCNAME[0]}"
 }
 
+function test_rm_versions_and_incomplete() {
+	show "${FUNCNAME[0]}"
+
+	start_time=$(get_time)
+	bucket_name="mc-test-bucket-$RANDOM"
+	versioned_object="mc-test-versioned-object-$RANDOM"
+	incomplete_object="mc-test-incomplete-object-$RANDOM"
+	upload_output="${MC_CONFIG_DIR}/rm-incomplete-upload-${RANDOM}.out"
+
+	assert_success "$start_time" "${FUNCNAME[0]}" mc_cmd mb "${SERVER_ALIAS}/${bucket_name}"
+	assert_success "$start_time" "${FUNCNAME[0]}" mc_cmd version enable "${SERVER_ALIAS}/${bucket_name}"
+	assert_success "$start_time" "${FUNCNAME[0]}" mc_cmd cp "${FILE_1_MB}" "${SERVER_ALIAS}/${bucket_name}/${versioned_object}"
+	assert_success "$start_time" "${FUNCNAME[0]}" mc_cmd cp "${FILE_0_B}" "${SERVER_ALIAS}/${bucket_name}/${versioned_object}"
+
+	# Start a throttled multipart upload and stop it after the server exposes the upload.
+	# SIGKILL leaves the upload incomplete so rm --incomplete has something to abort.
+	("${MC_CMD[@]}" --limit-upload 128KiB cp "${FILE_65_MB}" "${SERVER_ALIAS}/${bucket_name}/${incomplete_object}" >"${upload_output}" 2>&1) &
+	upload_pid=$!
+	upload_found=false
+	for _ in $(seq 1 100); do
+		if ! kill -0 "$upload_pid" 2>/dev/null; then
+			break
+		fi
+		incomplete_listing=$("${MC_CMD[@]}" --json ls --incomplete --recursive "${SERVER_ALIAS}/${bucket_name}/" 2>/dev/null)
+		if grep -Fq "$incomplete_object" <<<"$incomplete_listing"; then
+			upload_found=true
+			break
+		fi
+		sleep 0.2
+	done
+	if [ "$upload_found" != "true" ]; then
+		kill -KILL "$upload_pid" 2>/dev/null || true
+		wait "$upload_pid" 2>/dev/null || true
+		cat "$upload_output"
+		rm -f "$upload_output"
+		assert_failure "$start_time" "${FUNCNAME[0]}" show_on_success 0 "incomplete multipart upload was not created"
+	fi
+	kill -KILL "$upload_pid" 2>/dev/null || true
+	wait "$upload_pid" 2>/dev/null || true
+	rm -f "$upload_output"
+
+	assert_success "$start_time" "${FUNCNAME[0]}" mc_cmd rm --force --recursive --versions --incomplete "${SERVER_ALIAS}/${bucket_name}/"
+
+	for _ in $(seq 1 30); do
+		version_listing=$("${MC_CMD[@]}" --json ls --recursive --versions "${SERVER_ALIAS}/${bucket_name}/")
+		if ! grep -Fq "$versioned_object" <<<"$version_listing"; then
+			break
+		fi
+		sleep 1
+	done
+	if grep -Fq "$versioned_object" <<<"$version_listing"; then
+		assert_failure "$start_time" "${FUNCNAME[0]}" show_on_success 0 "versioned object remains after combined removal"
+	fi
+	for _ in $(seq 1 30); do
+		incomplete_listing=$("${MC_CMD[@]}" --json ls --recursive --incomplete "${SERVER_ALIAS}/${bucket_name}/")
+		if ! grep -Fq "$incomplete_object" <<<"$incomplete_listing"; then
+			break
+		fi
+		sleep 1
+	done
+	if grep -Fq "$incomplete_object" <<<"$incomplete_listing"; then
+		assert_failure "$start_time" "${FUNCNAME[0]}" show_on_success 0 "incomplete upload remains after combined removal"
+	fi
+
+	assert_success "$start_time" "${FUNCNAME[0]}" mc_cmd rb --force "${SERVER_ALIAS}/${bucket_name}"
+	log_success "$start_time" "${FUNCNAME[0]}"
+}
+
 function test_put_object_0byte() {
 	show "${FUNCNAME[0]}"
 
@@ -948,6 +1016,11 @@ function run_test() {
 	fi
 	test_put_object_with_metadata
 	test_put_object_multipart
+	if [ "${MC_TEST_SKIP_RM_VERSION_INCOMPLETE:-false}" != "true" ]; then
+		test_rm_versions_and_incomplete
+	else
+		echo "Skipping test_rm_versions_and_incomplete"
+	fi
 	test_get_object
 	test_get_object_multipart
 	test_mv_object

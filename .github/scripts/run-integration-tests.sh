@@ -67,6 +67,7 @@ skip_storage_class_error=false
 presigned_post_error="MethodNotAllowed"
 skip_watch=false
 skip_config_error=false
+skip_rm_version_incomplete=false
 
 cleanup() {
 	status=$?
@@ -122,6 +123,8 @@ start_garage() {
 	presigned_post_error="InvalidRequest"
 	skip_watch=true
 	skip_config_error=true
+	# Garage does not implement bucket versioning.
+	skip_rm_version_incomplete=true
 	local garage_dir="$work_dir/garage"
 	mkdir -p "$garage_dir/meta" "$garage_dir/data"
 	cat >"$garage_dir/garage.toml" <<'EOF'
@@ -187,6 +190,8 @@ start_seaweedfs() {
 	# environment variables as its initial administrator credentials.
 	skip_presigned_post=true
 	skip_watch=true
+	# SeaweedFS does not reliably retain and abort interrupted multipart uploads.
+	skip_rm_version_incomplete=true
 	docker run --detach --name "$container_name" \
 		--publish "$host_port:8333" \
 		--tmpfs /data \
@@ -294,6 +299,7 @@ export MC_TEST_SKIP_STORAGE_CLASS_ERROR="$skip_storage_class_error"
 export MC_TEST_PRESIGNED_POST_ERROR="$presigned_post_error"
 export MC_TEST_SKIP_WATCH="$skip_watch"
 export MC_TEST_SKIP_CONFIG_ERROR="$skip_config_error"
+export MC_TEST_SKIP_RM_VERSION_INCOMPLETE="$skip_rm_version_incomplete"
 export MC_TEST_SKIP_BUILD=true
 export MC_TEST_SKIP_INSECURE="$skip_insecure"
 

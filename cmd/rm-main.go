@@ -428,6 +428,23 @@ func printDryRunMsg(targetAlias string, content *ClientContent, printModTime boo
 //	   * Remove objects recursively
 //	   * Remove all versions of a single object
 func listAndRemove(url string, opts removeOpts) error {
+	if opts.withVersions && opts.isIncomplete {
+		versionOpts := opts
+		versionOpts.isIncomplete = false
+		if err := listAndRemovePass(url, versionOpts); err != nil {
+			return err
+		}
+
+		incompleteOpts := opts
+		incompleteOpts.timeRef = time.Time{}
+		incompleteOpts.withVersions = false
+		return listAndRemovePass(url, incompleteOpts)
+	}
+
+	return listAndRemovePass(url, opts)
+}
+
+func listAndRemovePass(url string, opts removeOpts) error {
 	ctx, cancelRemove := context.WithCancel(globalContext)
 	defer cancelRemove()
 
