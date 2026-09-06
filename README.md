@@ -37,7 +37,7 @@ It provides the following commands:
   watch      listen for object notification events
 ```
 
-It is based on the last open-source version of the [Minio client](https://github.com/minio/mc), but with some differences, see [compatibility](#compatibility).
+It is based on the last open-source version of the [Minio client](https://github.com/minio/mc), but is actively maintained and tested with a wide variety of S3-compatible services. See [compatibility](#compatibility) for more information.
 
 ## Installation
 
@@ -55,26 +55,25 @@ On Windows, you can install the `mc.exe` binary to `C:\Windows\System32` (alread
 Invoke-WebRequest -Uri https://github.com/supriyo-biswas/mc/releases/latest/download/mc-windows-amd64.exe -OutFile mc.exe; Move-Item -Force mc.exe C:\Windows\System32\mc.exe
 ```
 
+Now, type `mc` in the terminal to see if it works.
+
 ## Usage
 
 To begin, start by adding an object storage service to `mc`'s configuration by using the `mc` alias set command.
 
 You'll need an access key and secret to get started. For example, if you want to access Amazon S3, create an [access key in IAM](https://medium.com/@anuradha.kadurugasyaya/create-aws-iam-user-for-s3-bucket-892bae4751fc) and add it using the following command:
 
-```bash
-mc alias set s3 https://s3.amazonaws.com <access-key> <secret-key> --path dns --api S3v4
+```
+$ mc alias set s3 https://s3.amazonaws.com
+Enter Access key: ...
+Enter Secret key: ...
+Added `s3` successfully.
 ```
 
 Similarly, for Google Cloud Storage, you can create an [access key in Google Cloud](https://documentation.arcserve.com/Arcserve-Cloud/Available/Cloud_Console/ENU/olh/Cloud%20Console/creating_access_secret_keys_gc.htm) and add it using the following command:
 
 ```bash
-mc alias set gcs https://storage.googleapis.com <access-key> <secret-key> --path dns --api S3v2
-```
-
-If you have neither, you may test against the [MinIO Play server](https://play.min.io) by adding it as an alias:
-
-```bash
-mc alias set play https://play.min.io Q3AM3UQ867SPQQA43P2F zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG
+mc alias set gcs https://storage.googleapis.com
 ```
 
 Once you've done this, you can use the `mc` commands to manage your object storage, like so (replace `s3` with `gcs` or `play` or another alias that you've set):
@@ -108,15 +107,15 @@ cat      cp       event    head     mb       pipe     rm       share    stat    
 * [Garage](https://garagehq.deuxfleurs.fr)
 * [SeaweedFS](https://github.com/seaweedfs/seaweedfs)
 * [VersityGW](https://github.com/versity/versitygw)
-* [MinIO Aistor](https://www.min.io/product/aistor)
+* [Aistor](https://www.min.io/product/aistor)
 
 If you've faced compatibility issues with S3 compatible services please [open an issue](https://github.com/supriyo-biswas/mc/issues).
 
-There are a few differences in the CLI commands as well:
+There are a few differences between mc and the original Minio client:
 
 * MinIO-only commands such as `admin`, `support` and `license` are not included as we target broader S3 compatibility instead of being an administration tool for MinIO.
 * Local-only operations such as listing local files or deleting local files are not supported, as the author has found it only leads to mistakes such as inadvertently copying or deleting local files. Local↔remote and remote↔remote transfers and operations are supported.
 
 ## License
 
-`mc` is licensed under  the GNU AGPLv3 license that can be found in the [LICENSE](https://github.com/supriyo-biswas/mc/blob/master/LICENSE) file, which is the same license as the original [MinIO client](https://github.com/minio/mc).
+`mc` is licensed under  the GNU AGPLv3 license that can be found in the [LICENSE](https://github.com/supriyo-biswas/mc/blob/master/LICENSE) file, which is the same license as the original MinIO client.

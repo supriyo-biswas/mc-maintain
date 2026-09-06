@@ -31,6 +31,7 @@ builds:
       - arm
       - ppc64le
       - s390x
+      - riscv64
 
     goarm:
       - 7
@@ -44,6 +45,8 @@ builds:
         goarch: ppc64le
       - goos: darwin
         goarch: s390x
+      - goos: darwin
+        goarch: riscv64
       - goos: windows
         goarch: arm64
       - goos: windows
@@ -52,6 +55,8 @@ builds:
         goarch: ppc64le
       - goos: windows
         goarch: s390x
+      - goos: windows
+        goarch: riscv64
       - goos: freebsd
         goarch: arm
       - goos: freebsd
@@ -60,6 +65,8 @@ builds:
         goarch: ppc64le
       - goos: freebsd
         goarch: s390x
+      - goos: freebsd
+        goarch: riscv64
 
     flags:
       - -tags=kqueue
