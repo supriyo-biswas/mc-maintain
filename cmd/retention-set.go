@@ -24,9 +24,9 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/minio/cli"
-	"github.com/minio/mc/pkg/probe"
 	minio "github.com/minio/minio-go/v7"
 	"github.com/minio/pkg/v3/console"
+	"github.com/supriyo-biswas/mc/pkg/probe"
 )
 
 var retentionSetFlags = []cli.Flag{

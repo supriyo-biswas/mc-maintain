@@ -24,8 +24,8 @@ import (
 	"time"
 
 	"github.com/minio/cli"
-	"github.com/minio/mc/pkg/probe"
 	"github.com/minio/minio-go/v7"
+	"github.com/supriyo-biswas/mc/pkg/probe"
 )
 
 const envPrefix = "MC_"

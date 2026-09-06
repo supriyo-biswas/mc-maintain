@@ -46,13 +46,13 @@ To install the mc client, head to the [releases](https://github.com/supriyo-bisw
 On Linux/MacOS/FreeBSD, you can install the `mc` binary to `/usr/local/bin` using the following command:
 
 ```
-curl -fSL https://github.com/supriyo-biswas/mc/releases/latest/download/mc-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed -e 's/^x86_64$/amd64/' -e 's/^aarch64$/arm64/' -e 's/^armv.*$/arm/') -o mc && chmod +x mc && sudo mv mc /usr/local/bin/
+archive="mc-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed -e 's/^x86_64$/amd64/' -e 's/^aarch64$/arm64/' -e 's/^armv.*$/arm/').tar.gz" && tmpdir=$(mktemp -d) && curl -fSL "https://github.com/supriyo-biswas/mc/releases/latest/download/$archive" -o "$tmpdir/$archive" && tar -xzf "$tmpdir/$archive" -C "$tmpdir" && chmod +x "$tmpdir/mc" && sudo mv "$tmpdir/mc" /usr/local/bin/mc && rm -rf "$tmpdir"
 ```
 
 On Windows, you can install the `mc.exe` binary to `C:\Windows\System32` (already on `PATH`) using the following command in an elevated (Administrator) PowerShell:
 
 ```powershell
-Invoke-WebRequest -Uri https://github.com/supriyo-biswas/mc/releases/latest/download/mc-windows-amd64.exe -OutFile mc.exe; Move-Item -Force mc.exe C:\Windows\System32\mc.exe
+Invoke-WebRequest -Uri https://github.com/supriyo-biswas/mc/releases/latest/download/mc-windows-amd64.zip -OutFile mc.zip; Expand-Archive -Force mc.zip -DestinationPath .; Move-Item -Force mc.exe C:\Windows\System32\mc.exe; Remove-Item mc.zip
 ```
 
 Now, type `mc` in the terminal to see if it works.

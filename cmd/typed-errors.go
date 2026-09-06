@@ -22,7 +22,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/minio/mc/pkg/probe"
+	"github.com/supriyo-biswas/mc/pkg/probe"
 )
 
 type dummyErr error

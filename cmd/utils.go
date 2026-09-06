@@ -33,8 +33,8 @@ import (
 
 	"github.com/minio/minio-go/v7"
 
-	"github.com/minio/mc/pkg/probe"
 	"github.com/minio/pkg/v3/console"
+	"github.com/supriyo-biswas/mc/pkg/probe"
 	"golang.org/x/term"
 )
 

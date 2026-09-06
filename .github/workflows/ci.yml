@@ -219,26 +219,28 @@ jobs:
         run: |
           set -euo pipefail
 
-          # Stage binaries without a version part in the filename.
-          # Goreleaser may still emit versioned paths/names, so derive a
-          # stable asset name per platform instead of reusing .name.
+          # Stage archives without a version part in the filename.
+          # Goreleaser may still emit versioned paths/names, so derive stable
+          # asset names per platform instead of reusing .name.
           rm -rf release-assets
           mkdir -p release-assets
 
-          while IFS=$'\t' read -r path goos goarch; do
-            [[ -n "$path" && -n "$goos" && -n "$goarch" ]]
+          while IFS=$'\t' read -r path goos goarch format; do
+            [[ -n "$path" && -n "$goos" && -n "$goarch" && -n "$format" ]]
 
             name="mc-${goos}-${goarch}"
-            if [[ "$goos" == "windows" ]]; then
-              name="${name}.exe"
-            fi
+            case "$format" in
+              zip) name="${name}.zip" ;;
+              tar.gz) name="${name}.tar.gz" ;;
+              *) echo "Unsupported archive format: $format" >&2; exit 1 ;;
+            esac
 
             cp -- "$path" "release-assets/$name"
           done < <(
             jq -r '
               .[]
-              | select(.type == "Binary" and .extra.Format == "binary")
-              | [.path, .goos, .goarch]
+              | select(.type == "Archive" and (.extra.Format == "tar.gz" or .extra.Format == "zip"))
+              | [.path, .goos, .goarch, .extra.Format]
               | @tsv
             ' dist/artifacts.json
           )

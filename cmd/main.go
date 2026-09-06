@@ -34,12 +34,12 @@ import (
 
 	"github.com/inconshreveable/mousetrap"
 	"github.com/minio/cli"
-	"github.com/minio/mc/pkg/probe"
 	"github.com/minio/minio-go/v7/pkg/set"
 	"github.com/minio/pkg/v3/console"
 	"github.com/minio/pkg/v3/env"
 	"github.com/minio/pkg/v3/trie"
 	"github.com/minio/pkg/v3/words"
+	"github.com/supriyo-biswas/mc/pkg/probe"
 	"golang.org/x/term"
 
 	completeinstall "github.com/posener/complete/cmd/install"

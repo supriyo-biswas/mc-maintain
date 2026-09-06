@@ -21,8 +21,8 @@ import (
 	"io"
 	"sync/atomic"
 
-	"github.com/minio/mc/pkg/probe"
 	"github.com/minio/pkg/v3/console"
+	"github.com/supriyo-biswas/mc/pkg/probe"
 )
 
 // Status implements a interface that can be used in quit mode or with progressbar.

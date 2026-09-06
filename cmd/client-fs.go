@@ -39,15 +39,15 @@ import (
 	"github.com/rjeczalik/notify"
 
 	xfilepath "github.com/minio/filepath"
-	"github.com/minio/mc/pkg/disk"
-	"github.com/minio/mc/pkg/hookreader"
-	"github.com/minio/mc/pkg/probe"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/cors"
 	"github.com/minio/minio-go/v7/pkg/encrypt"
 	"github.com/minio/minio-go/v7/pkg/lifecycle"
 	"github.com/minio/minio-go/v7/pkg/notification"
 	"github.com/minio/pkg/v3/console"
+	"github.com/supriyo-biswas/mc/pkg/disk"
+	"github.com/supriyo-biswas/mc/pkg/hookreader"
+	"github.com/supriyo-biswas/mc/pkg/probe"
 )
 
 // filesystem client

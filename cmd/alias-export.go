@@ -3,8 +3,8 @@ package cmd
 import (
 	"github.com/minio/cli"
 	json "github.com/minio/colorjson"
-	"github.com/minio/mc/pkg/probe"
 	"github.com/minio/pkg/v3/console"
+	"github.com/supriyo-biswas/mc/pkg/probe"
 )
 
 var aliasExportCmd = cli.Command{

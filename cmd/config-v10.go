@@ -20,8 +20,8 @@ package cmd
 import (
 	"sync"
 
-	"github.com/minio/mc/pkg/probe"
-	"github.com/minio/mc/pkg/quick"
+	"github.com/supriyo-biswas/mc/pkg/probe"
+	"github.com/supriyo-biswas/mc/pkg/quick"
 )
 
 var (

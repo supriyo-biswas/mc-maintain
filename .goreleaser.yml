@@ -3,8 +3,8 @@ version: 2
 project_name: mc
 
 release:
-   name_template: "Version {{.Version}}"
-   replace_existing_artifacts: true
+  name_template: "Version {{.Version}}"
+  replace_existing_artifacts: true
 
 env:
   - CGO_ENABLED=0
@@ -18,8 +18,7 @@ before:
     - go mod download
 
 builds:
-  -
-    goos:
+  - goos:
       - linux
       - darwin
       - windows
@@ -38,8 +37,6 @@ builds:
 
     ignore:
       - goos: darwin
-        goarch: arm64
-      - goos: darwin
         goarch: arm
       - goos: darwin
         goarch: ppc64le
@@ -47,8 +44,6 @@ builds:
         goarch: s390x
       - goos: darwin
         goarch: riscv64
-      - goos: windows
-        goarch: arm64
       - goos: windows
         goarch: arm
       - goos: windows
@@ -73,12 +68,15 @@ builds:
       - -trimpath
 
     ldflags:
-      - "-s -w -X github.com/minio/mc/cmd.Version={{.Version}} -X github.com/minio/mc/cmd.ReleaseTag={{.Tag}} -X github.com/minio/mc/cmd.CommitID={{.FullCommit}} -X github.com/minio/mc/cmd.ShortCommitID={{.ShortCommit}}"
+      - "-s -w -X github.com/supriyo-biswas/mc/cmd.Version={{.Version}} -X github.com/supriyo-biswas/mc/cmd.ReleaseTag={{.Tag}} -X github.com/supriyo-biswas/mc/cmd.CommitID={{.FullCommit}} -X github.com/supriyo-biswas/mc/cmd.ShortCommitID={{.ShortCommit}}"
 
 archives:
-  -
-    formats:
-      - binary
+  - formats:
+      - tar.gz
+    format_overrides:
+      - goos: windows
+        formats:
+          - zip
     name_template: "{{ .Binary }}-release/{{ .Os }}-{{ .Arch }}/{{ .Binary }}"
 
 checksum:
@@ -88,4 +86,4 @@ changelog:
   sort: asc
   filters:
     exclude:
-      - '^Update yaml files'
+      - "^Update yaml files"

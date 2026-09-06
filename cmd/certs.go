@@ -21,8 +21,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/minio/mc/pkg/probe"
 	"github.com/minio/pkg/v3/certs"
+	"github.com/supriyo-biswas/mc/pkg/probe"
 )
 
 // getCertsDir - return the full path of certs dir

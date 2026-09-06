@@ -16,7 +16,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/minio/mc/pkg/probe"
+	"github.com/supriyo-biswas/mc/pkg/probe"
 )
 
 func TestFilesystemGuardHelpers(t *testing.T) {

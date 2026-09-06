@@ -25,9 +25,9 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/minio/mc/pkg/probe"
-	"github.com/minio/mc/pkg/quick"
 	"github.com/minio/pkg/v3/console"
+	"github.com/supriyo-biswas/mc/pkg/probe"
+	"github.com/supriyo-biswas/mc/pkg/quick"
 )
 
 func fixConfig() {

@@ -1,4 +1,4 @@
-module github.com/minio/mc
+module github.com/supriyo-biswas/mc
 
 go 1.25.0
 

@@ -34,8 +34,8 @@ import (
 	"github.com/dustin/go-humanize"
 	"github.com/google/shlex"
 	"github.com/minio/cli"
-	"github.com/minio/mc/pkg/probe"
 	"github.com/minio/pkg/v3/console"
+	"github.com/supriyo-biswas/mc/pkg/probe"
 	"golang.org/x/text/unicode/norm"
 
 	// golang does not support flat keys for path matching, find does

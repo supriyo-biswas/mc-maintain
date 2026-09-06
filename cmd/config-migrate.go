@@ -22,9 +22,9 @@ import (
 	"maps"
 	"strings"
 
-	"github.com/minio/mc/pkg/probe"
-	"github.com/minio/mc/pkg/quick"
 	"github.com/minio/pkg/v3/console"
+	"github.com/supriyo-biswas/mc/pkg/probe"
+	"github.com/supriyo-biswas/mc/pkg/quick"
 )
 
 // migrate config files from the any older version to the latest.
